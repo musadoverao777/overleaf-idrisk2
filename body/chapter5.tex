@@ -1,0 +1,222 @@
+\hypertarget{evaluation-and-results}{%
+\chapter{Evaluation and Results}\label{evaluation-and-results}}
+
+This chapter reports the empirical evaluation of the IDRISK2 system on a dataset of 34 real-world food images. The evaluation focuses on three dimensions: the per-layer performance of each pipeline component (OCR, VLM, RAG retrieval), the end-to-end classification accuracy against a manually annotated FoodEx2 ground truth, and the calibration of the system's confidence and human-review mechanisms with respect to actual classification correctness. The metrics presented in this chapter form the empirical basis for the discussion of the system's strengths and limitations developed in Chapter 6.
+
+\hypertarget{evaluation-metrics}{%
+\section{Evaluation Metrics}\label{evaluation-metrics}}
+
+\hypertarget{foodex2-classification-accuracy}{%
+\subsection{FoodEx2 Classification Accuracy}\label{foodex2-classification-accuracy}}
+
+Two complementary accuracy metrics are defined to capture the strict and lenient interpretations of correct classification within the FoodEx2 taxonomy. Exact-match accuracy is the proportion of system outputs whose base term code is identical to the ground truth code; this is the strictest interpretation, treating any divergence from the annotated code as incorrect. Family-level accuracy is the proportion of outputs whose code shares the same first three characters as the ground truth code, which corresponds to membership in the same FoodEx2 hierarchy branch (for example A03Z* for sandwich-class terms, A040* for cooked pasta-based dishes); this complementary metric captures cases where the system is in the correct semantic neighbourhood but missed the specific sub-type.
+
+\hypertarget{ocr-accuracy}{%
+\subsection{OCR Accuracy}\label{ocr-accuracy}}
+
+OCR-extracted text is reported in terms of token count per image and the rate of non-empty OCR output across the evaluation set. Because the dataset is dominated by photographs of prepared dishes without packaging text, the relevant question is not OCR character error rate but the proportion of images for which the OCR layer contributes any usable signal to the downstream pipeline. Where OCR did extract content, the sanitised token strings are reported alongside the corresponding final classification for traceability.
+
+\hypertarget{rag-retrieval-quality}{%
+\subsection{RAG Retrieval Quality}\label{rag-retrieval-quality}}
+
+The quality of the RAG retrieval layer is evaluated through three complementary measures. The mean rerank score of the top-1 retrieved candidate measures the cross-encoder's confidence in the most relevant passage. The proportion of retrieved passages that are FoodEx2 taxonomy terms (atomic nodes, prefixed term\_) versus EFSA documentation chunks (prefixed chunk\_) measures whether the retriever is surfacing the appropriate type of content for classification grounding. The RAG uplift rate measures the proportion of cases where the post-retrieval final classification differs from, and is closer to ground truth than, the VLM's preliminary code, quantifying the RAG layer's contribution to system accuracy.
+
+\hypertarget{calibration-metrics}{%
+\subsection{Calibration Metrics}\label{calibration-metrics}}
+
+Calibration is the alignment between the system's expressed confidence and the actual correctness of its outputs. The false high-confidence rate is the proportion of high-confidence outputs that are incorrect. The silent error rate is the proportion of incorrect outputs that escape the human-review trigger. Together, these two metrics measure whether the system's calibration honours the EU AI Act Article 14 requirement for meaningful human oversight in high-risk AI applications.
+
+\hypertarget{system-throughput-and-latency}{%
+\subsection{System Throughput and Latency}\label{system-throughput-and-latency}}
+
+Latency is measured per image as the wall-clock time between the submission of an image to the pipeline and the emission of the final FoodEx2 classification, including OCR, VLM inference, RAG retrieval, reranking, and structured generation. Throughput is reported as the inverse of the mean per-image latency aggregated across the evaluation set, to provide an estimate of operational feasibility in inspection workflow contexts.
+
+\hypertarget{experimental-setup}{%
+\section{Experimental Setup}\label{experimental-setup}}
+
+\hypertarget{dataset-description}{%
+\subsection{Dataset Description}\label{dataset-description}}
+
+The evaluation dataset comprises 34 photographs of food products and prepared dishes spanning Portuguese, Brazilian, and other international cuisines. The selection deliberately oversamples culturally specific dishes (feijoada, brigadeiro, francesinha, pastel de nata, acarajé) and Brazilian or Portuguese branded products (Sumol, Guaraná Antarctica, Ucal) to expose the system to inputs that lie outside the European-dominated coverage of the FoodEx2 taxonomy. Three of the 34 images are independent photographs of the same dish (francesinha.jpg, francesinha2.jpg, francesinha3.jpg), included to measure the system's stability across visual variations of an identical underlying food item. Images vary in resolution from 474\(\times\)474 to 2048\(\times\)1154 pixels and were captured under heterogeneous lighting conditions characteristic of real-world inspection scenarios.
+
+For each image, a ground truth FoodEx2 base term code was assigned manually through an interactive annotation tool that presented the human annotator with the five candidates surfaced by the RAG retriever, the system's final classification, and a keyword search interface against the full 31,303-term taxonomy. Annotation decisions were made by inspecting the image and applying the FoodEx2 classification methodology: selecting the most specific applicable base term, falling back to a hierarchical parent term when no specific term applies, and adopting the base-term-plus-facet approach for compositions that exceed any single available code. The complete ground truth annotation set is recorded in data/ground\_truth.json and forms the reference against which all accuracy metrics in this chapter are computed.
+
+\hypertarget{baseline-models}{%
+\subsection{Baseline Models}\label{baseline-models}}
+
+The system's RAG-augmented classification is compared against two baselines. The first is the bare VLM output: the preliminary FoodEx2 code emitted by the Vision-Language Model in its first inference pass, before any retrieval grounding. This baseline isolates the contribution of the RAG layer to overall accuracy. The second is the system's family-level classification, which credits the system for assignments that fall within the correct FoodEx2 hierarchy branch even when the specific code differs from the ground truth; this baseline allows the discussion to separate errors of granularity from errors of semantic misclassification.
+
+\hypertarget{results-of-ocr-and-image-processing}{%
+\section{Results of OCR and Image Processing}\label{results-of-ocr-and-image-processing}}
+
+The OCR layer extracted at least one token from 8 of the 34 evaluation images, corresponding to a non-empty-output rate of 23.5\%. The eight images for which OCR contributed signal were all photographs of packaged commercial products with visible labels: croissaint (4 tokens), guarana (9 tokens), hamburguer (2 tokens), salgadinho (9 tokens), sumol (9 tokens), tosta\_com\_humus (21 tokens), tosta\_mista (2 tokens), and ucal (13 tokens). The remaining 26 images, all of which depict prepared dishes served without packaging, yielded zero OCR tokens.
+
+This result confirms the methodological decision documented in Section 4.3.2 to treat OCR as a conditional rather than mandatory pipeline stage: in a substantial majority of operational classification requests, particularly those involving cooked dishes photographed at the point of consumption or inspection, no useful textual content exists on the image to be recognised. The system's tolerance for empty OCR output is therefore a structural requirement, not an edge case. Where OCR did extract content, the recovered tokens were typically degraded, for example, the Sumol can produced the string "Voriginal ) erasil {[}Quonaná AnTA RCTica 3SOml Uneunele unieiieotanzame 'Gulaani'", reflecting the visual complexity (curved surfaces, glare, stylised typography) of commercial food packaging. Despite the imperfect transcription, the OCR-derived tokens contributed measurable signal to the VLM's subsequent visual classification in all eight packaged-product cases, with the VLM correctly identifying the brand and product type from a combination of visual cues and degraded OCR fragments.
+
+\hypertarget{results-of-llm-based-information-extraction}{%
+\section{Results of LLM-based Information Extraction}\label{results-of-llm-based-information-extraction}}
+
+The Vision-Language Model (GPT-4o) was evaluated as the source of the initial FoodEx2 code assignment, prior to any RAG grounding. Three distinct findings emerge from this evaluation, each material to the discussion of hallucination mitigation in Chapter 6.
+
+First, the exact-match accuracy of the VLM's preliminary codes against the ground truth is zero out of 34, or 0.0\%. No image in the evaluation set received a correct base-term assignment from the VLM alone.
+
+Second, a verification of the VLM-emitted codes against the FoodEx2 Appendix B taxonomy revealed that 94\% (32/34) of the VLM codes are real taxonomy entries that describe entirely unrelated concepts, while the remaining 6\% (2/34) are codes that do not exist in the taxonomy at all. The codes generated by the VLM consistently followed the structural format of FoodEx2 base terms (the letter A followed by four alphanumeric characters) but the mapping between code and food was systematically fabricated. Representative examples include the code A0FQJ, which the VLM repeatedly assigned to mixed meat-and-vegetable dishes with the claimed label "Mixed dish with meat and vegetables" but which corresponds in the official taxonomy to "Pigeye shark (as animal)"; A0EKC, assigned to fried plantains and sandwiches alike, which is officially "Live vegetables for infusions (as part-nature)"; and A0C9N, used for sushi and tosta mista, which is officially "Young bulls (1-2 years) for dairy". A small number of codes recur as VLM fallbacks, reused across heterogeneous inputs: A0FQJ appeared five times, A0EKC four times, and A0EJX three times, a pattern consistent with parametric memorisation of plausible-looking but semantically arbitrary FoodEx2 identifiers.
+
+Third, the VLM expressed high confidence in 33 of its 34 preliminary classifications and medium confidence in only 1 (francesinha3.jpg). The confidence signal therefore provides no useful information about the actual probability of correctness, a phenomenon that propagates into the downstream classifier and undermines the human-review trigger discussed in Section 5.6.
+
+These findings establish that, when evaluated in isolation, the VLM operates as a confidently hallucinatory taxonomy assigner. The format of its outputs is well-formed and the natural-language descriptions of the images are accurate; the failure mode is specifically the binding of FoodEx2 identifiers to images, which the parametric model does not have reliable knowledge to perform. The classification system as a whole would therefore be entirely unusable in the absence of the retrieval-grounded correction implemented by the RAG layer.
+
+\hypertarget{results-of-retrieval-augmented-generation}{%
+\section{Results of Retrieval-Augmented Generation}\label{results-of-retrieval-augmented-generation}}
+
+The RAG retrieval layer surfaced five reranked passages per classification, drawn from a Chroma-backed index of 31,892 nodes (589 chunks from EFSA technical PDFs plus 31,303 atomic taxonomy term nodes). The mean rerank score of the top-1 candidate across the 34 images is 0.693 (median 0.700, minimum 0.581, maximum 0.761). For every image in the evaluation set, all five retrieved passages were taxonomy terms, no PDF chunk was ever reranked above a taxonomy term, which confirms that the cross-encoder is correctly identifying atomic taxonomy entries as the most relevant source of evidence for classification, rather than EFSA documentation chunks describing the system at a meta level.
+
+The downstream effect of the retrieval layer on classification accuracy is striking. The post-RAG final classifier achieved an exact-match accuracy of 10 out of 34 (29.4\%) and a family-level accuracy of 20 out of 34 (58.8\%). The full margin between the bare VLM accuracy of 0.0\% and the system accuracy of 29.4\% is therefore attributable to the RAG layer's correction of the VLM's preliminary codes, a RAG uplift rate of 29.4\%, with zero instances of the RAG layer degrading a previously correct VLM call. Family-level accuracy of 58.8\% indicates that, in an additional 10 of the 24 cases where the system did not match the ground truth code exactly, the system did assign a code from the correct FoodEx2 hierarchy branch; the dominant failure mode is therefore not assignment to an entirely wrong taxonomic family but rather selection of an adjacent sub-type within the correct family.
+
+One quantitative anomaly emerged in 4 of 34 cases. For rabanada.jpg, sushi.jpg, tosta\_mista.jpg, and ucal.jpg, the final classifier emitted exactly the FoodEx2 code that the VLM had previously hallucinated, A0C3P, A0C9N, A0C9N, and A02QJ respectively, together with the VLM's fabricated natural-language label. In each case, the retrieved passages did not include the VLM's claimed code, so the LLM-based generator could not have been selecting the VLM code from the retrieved candidate set; the code was carried over from the VLM's preliminary prompt into the final structured output without validation against the retrieval context. This label-leak phenomenon, observed in 11.8\% of the dataset and resulting in errors in 100\% of affected cases, is identified as an architectural failure mode and discussed in Section 6.3.
+
+\hypertarget{end-to-end-performance-and-calibration}{%
+\section{End-to-End Performance and Calibration}\label{end-to-end-performance-and-calibration}}
+
+Aggregating the results of all pipeline stages, the IDRISK2 system achieved the following end-to-end performance on the 34-image evaluation set: exact-match accuracy of 29.4\%, family-level accuracy of 58.8\%, median latency of 22.3 seconds per image (mean 22.2s, standard deviation 1.5s, range 19.7--25.5s), zero pipeline failures requiring fallback to the default classification, and a final-output confidence distribution of 32 high, 2 medium, and 0 low. The two medium-confidence outputs (guarana.jpg and mandioca.jpg) were automatically flagged for human review by the REVIEW\_TRIGGER\_LEVELS mechanism defined in Section 4.5.3.
+
+The latency distribution is notably tight: the standard deviation of 1.5 seconds across heterogeneous images indicates predictable per-classification cost dominated by the four sequential OpenAI API calls (VLM preliminary, query rewrite, HyDE generation, RAG-grounded final classification) and the local cross-encoder rerank pass. The lack of latency outliers supports the operational feasibility of the system in inspection contexts requiring predictable throughput. Extrapolated to an eight-hour inspection shift, the median latency corresponds to a theoretical throughput of approximately 1,290 classifications per inspector, far in excess of operational requirements, which suggests that the practical bottleneck of the system is not throughput but accuracy.
+
+The calibration of the system's confidence signal with respect to actual correctness is, however, severely deficient. Among the 32 high-confidence outputs, 23 (71.9\%) were incorrect with respect to the ground truth annotation, the system reports high confidence on the great majority of its errors. Among the 2 medium-confidence outputs that triggered automatic human review, 1 was correct (guarana) and 1 was incorrect (mandioca), giving the human-review trigger a precision of 50\% on the 2 cases it captured but, more importantly, a recall of only 1/24 (4.2\%) on the 24 actual errors present in the dataset. In aggregate, 23 of the 24 errors (95.8\%) escaped the automatic review mechanism, a silent error rate that materially weakens the system's compliance with the human-oversight requirement of Article 14 of the EU AI Act for high-risk AI systems. The calibration failure and its impact on the human-review mechanism are visualised in Figure 5.1, and the implications of this calibration failure are developed in Section 6.4.
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule
+\endhead
+\textbf{Metric} & \textbf{Value} & \textbf{Notes / context}\tabularnewline
+Images evaluated (n) & 34 & Portuguese/Brazilian dishes + packaged products\tabularnewline
+\textbf{Accuracy} & &\tabularnewline
+Exact-match accuracy & 29.4\% (10/34) & system code == ground truth code\tabularnewline
+Family-level accuracy & 58.8\% (20/34) & first 3 taxonomy characters match\tabularnewline
+\textbf{Latency (seconds)} & &\tabularnewline
+Minimum & 19.7 &\tabularnewline
+Median & 22.3 &\tabularnewline
+Mean & 22.2 & std-dev = 1.5 s\tabularnewline
+Maximum & 25.5 &\tabularnewline
+\textbf{Confidence distribution} & &\tabularnewline
+High & 32 / 34 & 94.1\% of outputs\tabularnewline
+Medium & 2 / 34 & guarana, mandioca; auto-flagged for review\tabularnewline
+Low & 0 / 34 &\tabularnewline
+\textbf{Calibration} & &\tabularnewline
+False high-confidence rate & 71.9\% & 23 of 32 high-confidence outputs wrong\tabularnewline
+Silent error rate & 95.8\% & 23 of 24 errors escaped automatic review\tabularnewline
+Human-review trigger recall & 4.2\% & 1 of 24 errors flagged\tabularnewline
+\textbf{RAG retrieval} & &\tabularnewline
+Mean rerank top-1 score & 0.693 & range 0.581 -- 0.761\tabularnewline
+TERM-node retrieval rate & 100\% & all retrieved candidates are taxonomy terms\tabularnewline
+Label-leak rate & 11.8\% (4/34) & VLM code propagated unchanged\tabularnewline
+\textbf{OCR} & &\tabularnewline
+Non-empty OCR output rate & 23.5\% (8/34) & only packaged products yield tokens\tabularnewline
+\bottomrule
+\end{longtable}
+
+\emph{Table 5.1, End-to-end performance and calibration of the IDRISK2 system on the 34-image evaluation set (GPT-4o configuration).}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,keepaspectratio]{fig4.png}
+\caption{Calibration of the IDRISK2 confidence signal and the human-review trigger. The left panel partitions the 34 evaluation cases by the system's reported confidence level (32 high, 2 medium, 0 low) and splits each bucket by correctness against the ground truth; 23 of the 32 high-confidence outputs are incorrect, yielding a false high-confidence rate of 71.9\%. The right panel shows the outcome of the human-review trigger over the 24 actual errors: only 1 error (the medium-confidence mandioca case) was flagged for review, while 23 escaped review as silent errors, yielding a trigger recall of 4.2\% and a silent error rate of 95.8\%. These two values together quantify the calibration failure discussed in Sections 6.3 and 6.4 and motivate the trigger redesign proposed in Section 8.1.}
+\end{figure}
+
+\hypertarget{comparison-with-baseline-models}{%
+\section{Comparison with Baseline Models}\label{comparison-with-baseline-models}}
+
+\hypertarget{rag-augmented-system-versus-bare-vlm}{%
+\subsection{RAG-augmented system versus bare VLM}\label{rag-augmented-system-versus-bare-vlm}}
+
+The comparison between the bare VLM baseline and the full RAG-augmented system isolates the contribution of the retrieval and reranking layers. As reported in Sections 5.4 and 5.5, the VLM-only baseline achieves 0.0\% exact-match accuracy on the evaluation set; the RAG-augmented system achieves 29.4\%. The marginal contribution of the RAG layer is therefore +29.4 percentage points of exact-match accuracy and +58.8 percentage points of family-level accuracy. The retrieval and reranking layers are not a refinement of an already-functional baseline but the entire source of useful classification signal in the system.
+
+\hypertarget{cross-vlm-comparison-proprietary-versus-open-source}{%
+\subsection{Cross-VLM comparison: proprietary versus open-source}\label{cross-vlm-comparison-proprietary-versus-open-source}}
+
+A cross-VLM comparison was conducted by re-running the full 34-image evaluation with the VLM stage substituted across three models, two proprietary, GPT-4o (OpenAI) and Claude Sonnet 4.6 (Anthropic), and one open-source 7B-parameter Vision-Language Model, LLaVA-NeXT-Mistral-7B, while holding the OCR, RAG, generation, and security stages of the pipeline constant. The objective of this comparison was twofold: first, to test the architectural claim of VLM substitutability documented in Section 6.2 against empirical data spanning the proprietary-versus-open-source dimension; and second, to determine whether the hallucination pattern characterised in Section 5.4 is a property of GPT-4o specifically, a property of the proprietary-VLM class, or a property of contemporary Vision-Language Models more generally. The complete set of comparative metrics is presented in Table 5.2 and visualised in Figure 5.2.
+
+The two configurations yielded essentially convergent results on the headline metrics. The system's exact-match accuracy was 29.4\% under both VLMs (10 out of 34 images correctly classified); the false high-confidence rate was 71.9\% under GPT-4o and 69.7\% under Claude (a 2.2 percentage-point gap); and the silent error rate was 95.8\% under both. The two proprietary VLMs differ measurably on three secondary metrics. Family-level accuracy was 58.8\% under GPT-4o and 55.9\% under Claude, indicating that Claude's errors are marginally further from the ground truth taxonomy branch when they occur. Median per-image latency was 22.3 seconds under GPT-4o and 26.3 seconds under Claude, a difference of approximately 18\%. The mean rerank score of the top-1 candidate was 0.693 under GPT-4o and 0.720 under Claude, indicating slightly tighter top-of-list retrieval under the Claude configuration despite the equivalent end-to-end exact-match accuracy. The label-leak rate, defined in Section 5.5 as the proportion of cases in which the final classifier emits the VLM's preliminary code unchanged, was 11.8\% under GPT-4o (4 out of 34) and 23.5\% under Claude (8 out of 34), Claude approximately doubles the rate at which the final structured generator carries the VLM's preliminary code through to the output without validation against the retrieved candidate set.
+
+Three findings of methodological significance arise from this comparison. First, the convergence of system exact-match accuracy at 29.4\% under two architecturally distinct proprietary VLMs constitutes the strongest available empirical evidence for the VLM-substitutability claim of Section 6.2: the choice between GPT-4o and Claude does not measurably affect the end-to-end accuracy that the RAG-augmented pipeline can achieve, which suggests that the determining factor in the system's accuracy is the retrieval and reranking stages rather than the upstream visual reasoning. Second, the convergence of the VLM-only baseline at 0.0\% across both proprietary models elevates the hallucination phenomenon from a GPT-4o-specific observation to a class-level property: a structured taxonomy classification at the granularity of FoodEx2 base terms appears to be a task on which contemporary proprietary VLMs systematically fail when evaluated in isolation, regardless of the specific model deployed. Third, the doubling of the label-leak rate under Claude indicates that the architectural defect documented in Section 5.5 is not uniformly distributed across VLMs but is sensitive to the verbosity and confidence with which the upstream VLM communicates its preliminary classification, a finding that strengthens the case for the output-validation mitigation proposed in Section 8.1.
+
+Two additional observations are recorded for completeness. The convergence of the silent error rate at 95.8\% under both VLMs confirms that the human-review trigger calibration failure documented in Section 5.6 is a system-level defect arising from the confidence-only trigger design, not a property of the underlying VLM; substituting the VLM does not alleviate the calibration failure, which supports the redesign proposed in Section 8.1 as a precondition for Article 14 compliance independent of VLM choice. The 18\% latency penalty associated with Claude is well within operational tolerance for inspection workflows but is recorded here as evidence that VLM substitutability is an architectural property, not a free one: production deployments must price the latency differential when choosing between proprietary alternatives.
+
+The substitution of the proprietary VLMs by the open-source LLaVA-NeXT-Mistral-7B model reveals the limits of the VLM-substitutability claim and provides a sharper empirical characterisation of where the architectural property breaks down. Under the LLaVA configuration, the system's exact-match accuracy collapses from 29.4\% to 2.9\% (1 of 34, the feijoada case, which the system classified correctly as A03VT "Beans, meat, and vegetables meal", a code that happens to coincide with the dish's literal description), and family-match accuracy falls from 58.8\% to 35.3\%. The bare-VLM exact-match accuracy remains at 0.0\%, consistent with both proprietary models, but the failure mode of the open-source VLM differs in character. LLaVA-NeXT produced the same preliminary code, A0FQJ "Mixed dish with meat and vegetables", in 33 of 34 cases, including for clearly distinct food categories such as brigadeiro (a chocolate confection), brownie (a chocolate cake), pastel de nata (a custard tart), pudim (a flan), guaraná (a canned soft drink), and tosta com avocado (a vegetarian toast). The VLM is therefore not producing diverse hallucinations across the test set, as the proprietary models do, but a single dominant generic-fallback hallucination repeated almost uniformly, which contaminates the RAG query with the same misdescription regardless of the actual visual content.
+
+Three further LLaVA-specific findings carry methodological weight for the thesis. First, the label-leak rate under LLaVA is the lowest of the three VLMs at 8.8\%, lower than both GPT-4o (11.8\%) and Claude (23.5\%). This inversion appears counter-intuitive but follows directly from the homogeneity of LLaVA's hallucinated outputs: because the model nearly always proposes the same generic A0FQJ code, the retriever, the cross-encoder, and the LLM generator each have ample opportunity to override the proposal with a more specific candidate sourced from the retrieved context, and they do so in 31 of 34 cases. The label-leak metric, considered in isolation, would have misranked LLaVA as the most reliable of the three VLMs; the system-level exact-match accuracy reveals the contrary. This observation reinforces a methodological caution that label-leak is a diagnostic of VLM-classifier interaction, not a standalone quality indicator, and must be read jointly with downstream accuracy. Second, the system correctly emitted UNKNOWN with low confidence on two cases (hamburguer.jpg and ucal.jpg) under the LLaVA configuration, which produces a 5.9\% explicit-refusal rate not observed under the proprietary VLMs. The refusals coincide with cases where the retrieved candidate set offered no plausible match for the LLaVA-contaminated query, and the generator's instruction to ground every classification in retrieval correctly triggered a refusal rather than a fabrication. Third, the median per-image latency under LLaVA is 329 seconds, approximately 15 times that of GPT-4o, attributable to the local-inference cost of the 7B-parameter open-source model running with partial CPU offload on the Colab L4 GPU configuration documented in the appendix. This latency profile places the open-source configuration outside operational tolerance for time-sensitive inspection workflows under the current deployment hardware, although it remains tractable for batch reprocessing or offline annotation.
+
+Together, the three-way comparison supports a refined version of the VLM-substitutability claim of Section 6.2. Substitutability holds robustly within the proprietary-VLM class for end-to-end accuracy, with secondary metrics that differ by single-digit percentage points. Substitutability does not hold between the proprietary-VLM class and the 7B open-source-VLM class evaluated here, where accuracy collapses by approximately one order of magnitude. The RAG layer continues to function under the open-source VLM, in the specific and weaker sense that it still overrides the VLM's preliminary code in 91.2\% of cases (the grounded-reasoning rate computed from the LLaVA run), but the corrections converge on a small set of dominant codes (A03VT in 19 of 34 cases) rather than on the dispersed correct codes that GPT-4o and Claude enable. The implication for deployment is that an open-source-only configuration is technically operable today, in the sense that it runs end-to-end and produces structured outputs with audit trails, but does not yet reach a useful accuracy threshold for regulatory-grade classification at this model scale. The position is recorded here as the empirical benchmark against which future open-source VLMs at larger parameter counts or with task-specific fine-tuning would need to be measured to demonstrate substantive convergence with the proprietary class.
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule
+\endhead
+\textbf{Metric} & \textbf{GPT-4o} & \textbf{Claude Sonnet 4.6} & \textbf{LLaVA-NeXT 7B}\tabularnewline
+Images evaluated (n) & 34 & 34 & 34\tabularnewline
+System exact-match accuracy & 29.4\% (10/34) & 29.4\% (10/34) & 2.9\% (1/34)\tabularnewline
+System family-match accuracy & 58.8\% (20/34) & 55.9\% (19/34) & 35.3\% (12/34)\tabularnewline
+VLM exact-match accuracy & 0.0\% (0/34) & 0.0\% (0/34) & 0.0\% (0/34)\tabularnewline
+Label-leak rate & 11.8\% (4/34) & 23.5\% (8/34) & 8.8\% (3/34)\tabularnewline
+UNKNOWN refusal rate & 0.0\% (0/34) & 0.0\% (0/34) & 5.9\% (2/34)\tabularnewline
+False high-confidence rate & 71.9\% & 69.7\% & 96.4\%\tabularnewline
+Silent error rate (escaped review) & 95.8\% & 95.8\% & 81.8\%\tabularnewline
+Median per-image latency & 22.3 s & 26.3 s & 329 s\tabularnewline
+Mean rerank top-1 score & 0.693 & 0.720 & 0.659\tabularnewline
+\bottomrule
+\end{longtable}
+
+\emph{Table 5.2, Cross-VLM comparison on the 34-image evaluation set across two proprietary VLMs (GPT-4o, Claude Sonnet 4.6) and the LLaVA-NeXT-Mistral-7B open-source baseline, with OCR, RAG, generation, and security stages held constant.}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,keepaspectratio]{fig5.png}
+\caption{Cross-VLM comparison on the 34-image evaluation set across two proprietary VLMs (GPT-4o, Claude Sonnet 4.6) and the LLaVA-NeXT-Mistral-7B open-source baseline. The upper panel reports six percentage-based metrics; the proprietary-VLM pair converges on the headline accuracy and silent-error metrics, while the open-source 7B baseline collapses on system exact-match accuracy by approximately one order of magnitude, validates the bare-VLM zero-accuracy class-level property, and inverts the label-leak ordering by producing a single dominant generic-fallback hallucination across the test set. The lower panels report median per-image latency, where the LLaVA configuration is approximately 15 times slower than GPT-4o due to local 7B-parameter inference, and the mean rerank top-1 score, where retrieval quality degrades modestly under the homogeneous-query regime induced by the open-source VLM.}
+\end{figure}
+
+\hypertarget{output-stability-case-study}{%
+\subsection{Output-stability case study}\label{output-stability-case-study}}
+
+A third baseline comparison is implicit in the system's treatment of the dataset's three independent francesinha photographs. A robust classifier should assign identical or substantively equivalent codes to all three images of the same underlying dish. Under the GPT-4o configuration, the system assigned francesinha.jpg to A03ZB (correct), francesinha2.jpg to A040S "Pasta, cooked, with cheese/cream" (incorrect, assigning the dish to the pasta family), and francesinha3.jpg to A03XD "Meat loaf with cheese, vegetables or other" (incorrect, assigning to the meat-loaf family). Under the Claude configuration, the corresponding assignments were A03ZK, A03ZG, and A03ZB, all three within the sandwich (A03Z*) family but distinct sub-types, indicating that Claude exhibits visibly tighter family-level consistency on the controlled-stimulus subset even though only the third image reproduces the ground truth code. The variance of system output across visually equivalent inputs is therefore high enough under both VLMs that the same dish can be classified into three different specific codes depending on the photograph supplied, but the magnitude of the variance differs: GPT-4o crosses taxonomy families on this subset where Claude does not. This case is revisited in the detailed case-study analysis of Section 5.8.
+
+\hypertarget{facet-level-classification-evaluation}{%
+\subsection{Facet-level classification evaluation}\label{facet-level-classification-evaluation}}
+
+The evaluations reported in Sections 5.7.1 through 5.7.3 measure the system's performance on the base term, the leftmost element of the FoodEx2 compound code (Section 2.1). A complete FoodEx2 classification, however, comprises the base term in combination with one or more facet descriptors, which encode orthogonal characterisation axes (part-nature, ingredient, process, packaging-format, packaging-material, and others, as documented in the FoodEx2 specification \parencite{european_food_safety_authority__efsa__200edd3d}, Section 5.7 and Appendix A). To assess the system's behaviour on the facet dimension of the classification task, a facet-level ground truth was constructed for the 34-image evaluation set covering the three facets the system most frequently emits across the cross-VLM comparison: F04 (Ingredient), F28 (Process), and, for the three packaged-drink items (guaraná, sumol, ucal) where they apply, F18 (Packaging-format) and F19 (Packaging-material).
+
+The annotation methodology follows the FoodEx2 specification's guidance that F04 is a Repeatable facet whose focus should be the characterising ingredient of the food \parencite{european_food_safety_authority__efsa__200edd3d}. For each image, each relevant facet was annotated with a list of acceptable FoodEx2 codes drawn from the Appendix B taxonomy, allowing any one of the listed codes to count as correct under the per-image evaluation. For acarajé, for example, F04 was annotated as either A011Z "Beans (fresh seeds without pods) and similar" or A037N "Palm oil/fat", reflecting the two characterising ingredients of the dish; for chouriço, F04 was annotated as either A019L "Paprika powder" or A057F "Pig (as animal)", reflecting the spice that distinguishes chouriço from other cured sausages alongside the species of origin. Where a base term is sufficiently specific that a facet is implicit (Section 2.1; EFSA, 2015, Page 26), the facet is not annotated. The facet outputs emitted by each of the three evaluated VLMs (GPT-4o, Claude Sonnet 4.6, and LLaVA-NeXT-Mistral-7B) were extracted from the per-image results JSONL artefacts produced by the evaluation script and compared against this ground truth on three complementary metrics, coverage (the rate at which the system emits any value for a facet that the ground truth marks as relevant), accuracy-when-emitted (the rate at which an emitted value falls within the acceptable code list), and recall (the rate at which the system both emits a value and that value is acceptable, equivalent to the product of coverage and accuracy-when-emitted). A complementary aggregate score, the per-image facet hit rate, is also reported, defined as the fraction of the 34 images for which the system emitted at least one acceptable code across the set of relevant facets for that image. The full computation is implemented in data/evaluation/compute\_facet\_metrics.py and is deterministically reproducible from the evaluation JSONL artefacts and the facets\_gt entries of data/ground\_truth.json.
+
+The cross-VLM results, reported in Table 5.3, identify three findings of methodological significance for the system's facet behaviour. The first is that the F18 and F19 packaging facets are emitted at a rate of 0.0\% across the three VLMs, despite three of the 34 images depicting clearly packaged beverages (a canned guaraná, a packaged sumol, and a tetra-pak ucal) for which these facets are unambiguously relevant. The architectural defect is not localised to any single VLM; it represents a systematic gap in the system's facet emission behaviour across all three configurations and is consistent with the absence of explicit packaging detection in the prompts used by the generation stage. The second finding is that F04 (Ingredient) is emitted at a high rate across all three VLMs (77.5\% to 94.1\% of relevant cases) but with low accuracy when emitted (11.5\% to 20.0\%), indicating that the system produces structurally well-formed facet outputs (the right slot is populated, with a code drawn from the FoodEx2 vocabulary) but the semantic content of those outputs is overwhelmingly incorrect. This is the facet-level analogue of the base-term hallucination phenomenon characterised in Section 5.4, and it confirms that the schema-validity-without-semantic-correctness failure mode is not restricted to the base term but extends across the compound classification.
+
+The third finding is that F28 (Process) behaves substantially better than F04 and confirms the proprietary-to-open-source hierarchy established in Section 5.7.2 in a setting independent of the base term. Under GPT-4o, F28 is emitted in 65.5\% of relevant cases and is accurate when emitted in 63.2\% of those cases, yielding a recall of 41.4\%; under Claude, F28 is emitted in 82.8\% of cases but accurate in only 37.5\% (recall 31.0\%); under LLaVA-NeXT, F28 is emitted in 13.8\% of cases and accurate in 0.0\% of those (recall 0.0\%). The per-image facet hit rate aggregates these per-facet observations and follows the same pattern (GPT-4o 38.2\%, Claude 35.3\%, LLaVA-NeXT 8.8\%), recapitulating the order-of-magnitude collapse from proprietary to open-source 7B VLMs observed for the base term but at a different absolute scale: the proprietary VLMs converge near 35\% facet hit rate against a substantially lower exact-match accuracy on base term, indicating that the systems extract more useful descriptive information from the image than the base-term evaluation alone reveals. The implication for the system's operational deployment is that the facet dimension of the FoodEx2 classification carries useful signal under proprietary VLM configurations, even when the base term itself is incorrect, but does not extend gracefully to the open-source 7B class evaluated here.
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule
+\endhead
+\textbf{Metric} & \textbf{GPT-4o} & \textbf{Claude Sonnet 4.6} & \textbf{LLaVA-NeXT 7B}\tabularnewline
+Per-image facet hit rate (\textgreater=1 acceptable) & 38.2\% & 35.3\% & 8.8\%\tabularnewline
+F04 (Ingredient), coverage & 88.2\% & 94.1\% & 76.5\%\tabularnewline
+F04 (Ingredient), accuracy when emitted & 20.0\% & 18.8\% & 11.5\%\tabularnewline
+F04 (Ingredient), recall & 17.6\% & 17.6\% & 8.8\%\tabularnewline
+F28 (Process), coverage & 65.5\% & 82.8\% & 13.8\%\tabularnewline
+F28 (Process), accuracy when emitted & 63.2\% & 37.5\% & 0.0\%\tabularnewline
+F28 (Process), recall & 41.4\% & 31.0\% & 0.0\%\tabularnewline
+F18 (Packaging-format), coverage & 0.0\% & 0.0\% & 0.0\%\tabularnewline
+F19 (Packaging-material), coverage & 0.0\% & 0.0\% & 0.0\%\tabularnewline
+\bottomrule
+\end{longtable}
+
+\emph{Table 5.3, Facet-level cross-VLM evaluation on the 34-image evaluation set. Coverage is the rate at which the system emits any value for a facet that the ground truth marks as relevant. Accuracy-when-emitted is the rate at which the emitted value falls within the acceptable code list for that facet. Recall is the product of coverage and accuracy-when-emitted. Per-image facet hit rate is the fraction of the 34 images for which at least one acceptable facet code was emitted across the relevant facet set. All values are deterministically reproducible from compute\_facet\_metrics.py.}
+
+\hypertarget{case-studies}{%
+\section{Case Studies}\label{case-studies}}
+
+Five cases are selected as illustrative of the system's failure and success modes; each is briefly summarised here and developed further in the discussion.
+
+The acarajé case (acaraje.jpg) is a cascading failure rooted in the VLM's visual misidentification. The model described the image as "fried plantains stuffed with shrimp and vegetables", visually plausible but factually wrong; acarajé is a fried fritter of black-eyed pea paste, not plantain. The query rewrite preserved this misidentification, the retriever surfaced vegetable-fried-dish candidates, and the final classifier assigned A03YC "Mixed vegetables, fried" with high confidence. The correct ground truth, A03VM "Legumes based dishes", was never present in the retrieved candidate set because the upstream query had been semantically contaminated by the VLM's initial error.
+
+The sushi case (sushi.jpg) is an instance of label leak combined with retrieval failure. The VLM emitted the code A0C9N, officially "Young bulls (1-2 years) for dairy", together with the claimed label "Sushi". The retriever surfaced five sausage and surimi candidates, none of which were sushi. The final classifier nonetheless emitted A0C9N with the VLM's claimed label, despite the retrieval context offering no support for the assignment. The correct ground truth, A16GF "Rice, fish/seafood and vegetable based dishes", was not surfaced by the retriever and was not present in the final classifier's reasoning.
+
+The salmão com arroz case (salmao\_com\_arroz.jpg) illustrates the human-review mechanism failing exactly when it would be most useful. The VLM mis-identified the image content as "chicken, avocado, sweet potatoes, greens" rather than salmon and rice. The system assigned A03VT "Beans, meat, and vegetables meal" with high confidence; the correct ground truth was A03XR "Fish and rice meal". Because the confidence was reported as high, the human-review trigger did not activate, and the error was emitted into the audit trail as a high-confidence classification.
+
+The francesinha trio (francesinha.jpg, francesinha2.jpg, francesinha3.jpg) constitutes the dataset's controlled experiment on output stability. As reported in Section 5.7.3, the three images received entirely different classifications under the GPT-4o configuration, A03ZB (correct), A040S "Pasta, cooked, with cheese/cream", and A03XD "Meat loaf with cheese, vegetables or other", and three different sandwich-family classifications under the Claude configuration (A03ZK, A03ZG, A03ZB). The case demonstrates that the variance attributable to visual instability in the VLM stage is large enough to dominate the system's output even when the underlying food item is constant, and that the magnitude of the variance is sensitive to VLM choice: GPT-4o crosses taxonomy families on this controlled stimulus subset where Claude does not.
+
+The brigadeiro case (brigadeiro.jpg) is a clean success: the VLM produced the hallucinated code A0D7F ("Lime infusion flowers and similar") but the RAG retriever surfaced A034R "Chocolate coated confectionery" as the top reranked candidate, the LLM generator selected it correctly, and the system emitted A034R with high confidence and reasoning grounded in the retrieved passage. The case demonstrates the system functioning as designed, with the retrieval layer correctly overriding a hallucinated VLM proposal.

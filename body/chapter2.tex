@@ -1,107 +1,131 @@
-\chapter{Chapter Example} \label{chap:ch2}
+\hypertarget{background-and-fundamentals}{%
+\chapter{Background and Fundamentals}\label{background-and-fundamentals}}
 
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit. 
-Donec a eros. Phasellus non nulla non massa venenatis convallis. 
-In porta. Mauris quis magna. 
+This section provides a foundational understanding of the key theoretical concepts and technologies underpinning the proposed AI-enhanced system, encompassing food classification principles, artificial intelligence methodologies, and relevant regulatory frameworks. Specifically, it will delineate the structural components and terminologies of the FoodEx2 classification system (2.1), foundational concepts in artificial intelligence such as optical character recognition and computer vision techniques (2.2), and the pertinent regulatory landscape including GDPR provisions for data privacy and security (2.4).
 
-\section{Introduction}
+\hypertarget{foodex2-classification-system}{%
+\section{FoodEx2 Classification System}\label{foodex2-classification-system}}
 
-\textcite{kn:MVL06-xata} fusce risus mi, tristique eu, consectetuer 
-id, auctor sed, elit. Donec laoreet. Duis consectetuer interdum 
-libero.
+The food domain plays a fundamental role in society, with far-reaching impacts across multiple sectors, including public health, economic stability, and environmental sustainability. Given this broad societal influence, ensuring the safety, quality, and traceability of food products has become increasingly important. These challenges highlight the need for effective monitoring and control mechanisms in food production and distribution, which are often overseen by regulatory authorities such as the European Food Safety Authority (EFSA). In response, EFSA developed the FoodEx2 Classification System, a standardised framework designed to harmonise food classification and support consistent food safety risk assessment \parencite{hern_n_g__redondo_919f3cec}.
 
-In euarcu. Fusce luctus diam eget lectus. Duis interdum lacus sed
-ligula. Proin vestibulum felis eget lacus. Vivamus vestibulum, tellus
-ut congue viverra, mauris lacus tempor turpis, eu congue nisi magna at
-dolor. Ut molestie vehicula libero. Praesent in neque sed risus tempus
-ornare. Donec hendrerit, erat eu semper aliquam, pede nulla dapibus
-risus, ut pretium orci pede et neque.
-Etiam eget tortor a metus convallis viverra. Quisque eget nisi sed
-orci facilisis interdum. Aliquam non felis. 
+Building on the terminology introduced in Section 1.1, the taxonomy is organised in two complementary structural dimensions. The first is the base-term hierarchy, which spans broad food groups (for example, A001A "Live animals"), intermediate sub-groups, and species-level or preparation-level distinctions, with each term identified by a unique code following the structural format of an A-prefix followed by four alphanumeric characters. The taxonomy comprises 31,303 approved terms and 298 deprecated terms organised across five complementary views, hierarchy, reporting, exposure, ingredient, and pesticide, each tailored to a specific regulatory use case ((EFSA), 2015). The second dimension is the facet system, which decomposes the description of a food item into orthogonal characterisation axes, source, part-nature, processing methods, physical state, packaging, and others, each providing a controlled vocabulary that can be combined with the base term to capture compositions or processing variants that do not warrant a dedicated base term of their own. The taxonomy is distributed in two complementary formats: the technical documentation describing the system's governance and use, and the Appendix B XLSX export containing the full set of approved terms with their associated metadata.
 
-\section{Section Example}\label{sec:se21}
+Similar to the food domain itself, FoodEx2 is a system that is continuously evolving and improving. In addition to the document The food classification and description system FoodEx2 (Revision 2), which provides guidance for the harmonised use of the system and quality control of FoodEx2 codes, EFSA publishes periodic updates that introduce modifications and new terms. Furthermore, EFSA provides several supporting tools, such as the Catalogue Browser and the Smart Coding Application (SCA), which facilitate code search and support the practical use of the FoodEx2 classification system \parencite{pedro_nabais_3f3d64d2,marina_nikoli__22bc7ee3}.
 
-\emph{Scalable Vector Graphics}\index{SVG}\index{XML!SVG} 
-Curabitur ipsum tortor, ornare vitae, dapibus pretium, 
-hendrerit sed, urna~\parencite{kn:svgdoc}.
+The system plays a crucial role in harmonising data collection for food consumption and chemical occurrence, enabling robust exposure assessments across Europe \parencite{marina_nikoli__c1230f7a,magalie_weber_debfa18b}. Therefore, the importance of FoodEx2 extends beyond its role as a classification system, functioning as a key tool for communication, data standardisation, and research. However, its inherent complexity and continuous evolution make manual application challenging, highlighting the need for innovative and automated solutions.
 
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec a eros. 
-\textcite{kn:svgibm,kn:svgw3c} phasellus non nulla non massa venenatis convallis. 
-In porta. Mauris quis magna.
+\hypertarget{artificial-intelligence-in-data-processing}{%
+\section{Artificial Intelligence in Data Processing}\label{artificial-intelligence-in-data-processing}}
 
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec a
-eros. Phasellus non nulla non massa venenatis convallis. In
-porta. Mauris quis magna. Proin mauris eros, aliquet id, eleifend
-vitae, semper quis, erat. Aliquam id lectus non odio dignissim
-blandit. Vestibulum porttitor arcu ut ligula.
+Artificial intelligence has emerged as a key technology for processing complex and large-scale datasets, particularly in domains that require the integration of heterogeneous data sources, such as food safety and regulatory compliance \parencite{rawan_elragal_fb5fd9d1}. The increasing availability of digital data, including images, textual descriptions, and structured metadata, has enabled the development of AI-driven systems capable of automating data interpretation and classification tasks.
 
-Vestibulum ante ipsum primis in faucibus orci luctus et
-ultrices posuere cubilia Curae; Phasellus bibendum, nulla eget varius
-aliquam, tortor nulla sollicitudin quam, vel vestibulum nisl magna at
-sem. Aliquam velit sapien, ultrices viverra, tempus quis, ultrices at,
-dui. Aliquam sit amet justo. Quisque tristique, metus eu iaculis
-sagittis, urna leo bibendum diam, a ultricies sem diam a augue. Mauris
-consectetuer, libero vel euismod tincidunt, nisi metus viverra ante,
-quis pretium sapien odio nec risus. Nunc semper auctor
-nulla\footnote{Example of a footnote.}. 
+This section reviews the core AI technologies underpinning the proposed system. It begins with Optical Character Recognition as the text extraction layer for image-based sources such as product labels. It then examines computer vision techniques that support the identification of visual features beyond text, followed by Large Language Models, which enable semantic interpretation of product information and regulatory documents. The integration of both visual and linguistic modalities is addressed through Vision-Language Models. Finally, given that AI models can generate inaccurate or fabricated outputs, particularly in specialised domains with incomplete data, Retrieval-Augmented Generation framework is introduced as the mechanism to ground the model's responses in external, up-to-date knowledge bases, thereby enhancing factual accuracy and reducing the propensity for generating fallacious information \parencite{zahra_namkhah_66f512ba}.
 
-\subsection{Subsection Example} \label{sec:se311}
+\hypertarget{optical-character-recognition-ocr}{%
+\subsection{Optical Character Recognition (OCR)}\label{optical-character-recognition-ocr}}
 
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Nunc eu
-nulla. Pellentesque vitae nibh ultrices quam iaculis
-convallis. Aliquam purus eros, varius eget, volutpat sodales,
-imperdiet nec, lacus \textit{applets}~\parencite{kn:batik}. 
+Optical Character Recognition is a specialised application of computer vision that converts different types of documents, such as scanned paper documents, PDFs, or images captured by a digital camera, into editable and searchable data \parencite{do_hee_kim_9624c3df}. This technology enables the transformation of unstructured visual information into machine-encoded text, supporting better processing and analysis of the information.
 
-Curabitur in elit sed sem rutrum posuere. Class aptent taciti 
-sociosqu ad litora torquent per conubia nostra, per
-inceptos himenaeos~\parencite{kn:svgdoc}. 
+An OCR system typically involves several stages, including image preprocessing, character recognition, and post-processing, each contributing to the accuracy and efficiency of text extraction. Modern OCR engines, such as Tesseract, have significantly advanced beyond basic digitisation to become core components of intelligent data capture systems, often integrating with AI and machine learning techniques for sophisticated information extraction and Intelligent Document Processing \parencite{munasprianto_ramli_8ac57418}.
 
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Nunc eu
-nulla. Pellentesque vitae nibh ultrices quam iaculis
-convallis. Aliquam purus eros, varius eget, volutpat sodales,
-imperdiet nec, lacus. Curabitur in elit sed sem rutrum posuere. Class
-aptent taciti sociosqu ad litora torquent per conubia nostra, per
-inceptos himenaeos. Duis sem. Praesent ultricies odio vel
-sapien. Integer faucibus malesuada libero. Cras semper, dolor id
-ullamcorper varius, magna risus volutpat felis, id pellentesque nulla
-ante at erat. Integer sodales. 
+At image preprocessing, algorithms are applied to enhance image quality and isolate text regions, often involving steps like binarisation, noise reduction, and skew correction to optimise character recognition accuracy. Following this, character recognition engines utilise advanced machine learning algorithms, including deep convolutional and recurrent neural networks, to accurately identify and translate these isolated textual elements into digital text, even amidst variations in font, size, and orientation \parencite{chih_chung_hsu_2d9c1cb7}. Finally, post-processing techniques employ linguistic models and dictionaries to correct recognition errors and ensure the output text is coherent and semantically accurate.
 
-Quisque sit amet odio. In at risus sit amet turpis interdum
-posuere. Maecenas iaculis vehicula sem. Ut leo arcu, malesuada vel,
-imperdiet id, dignissim a, purus. Duis eleifend, lectus non venenatis
-dignissim, risus libero imperdiet mi, nec gravida massa libero sed
-mauris. Nullam lobortis libero non sapien. Integer convallis iaculis
-erat. Morbi dictum. Ut ultrices pellentesque velit. Cras ac
-ante. Etiam in neque tincidunt lacus gravida vehicula. Proin et nisi. 
+Despite these advancements, OCR technology struggles with challenging document layouts and low-quality images, significantly impacting its overall accuracy and reliability. As explored in the following section, advances in computer vision offer promising solutions to these limitations.
 
-Vivamus non nunc nec risus tempor varius. Quisque bibendum mi at
-dolor. Aliquam consectetuer condimentum risus. Aliquam luctus pulvinar
-sem. Duis aliquam, urna et vulputate tristique, dui elit aliquet nibh,
-vel dignissim magna turpis id sapien. Duis commodo sem id
-quam. Phasellus dolor. Class aptent taciti sociosqu ad litora torquent
-per conubia nostra, per inceptos himenaeos. 
+\hypertarget{computer-vision-techniques}{%
+\subsection{Computer Vision Techniques}\label{computer-vision-techniques}}
 
-\subsection{Subsection Example} \label{sec:se312}
+Computer vision, a field of artificial intelligence, enables machines to interpret and understand visual information from the real world, analogous to human sight. This discipline involves developing algorithms and models that allow computers to process, analyse, and make decisions based on images and videos, transforming raw pixel data into meaningful insights. This capability is crucial for tasks such as object recognition, scene understanding, and motion analysis, which are vital for automated systems interacting with physical environments. In the context of the IDRISK2 project, computer vision is pivotal for analyzing multimodal data, specifically for extracting salient visual features from images of food products and packaging, which directly informs FoodEx2 compliance assessments.
 
-Loren ipsum dolor sit amet, consectetuer adipiscing elit. 
-Praesent sit amet sem. Maecenas eleifend facilisis leo. Vestibulum et
-mi. Aliquam posuere, ante non tristique consectetuer, dui elit
-scelerisque augue, eu vehicula nibh nisi ac est. Suspendisse elementum
-sodales felis. Nullam laoreet fermentum urna. 
+Key computer vision techniques include image segmentation, which partitions an image into multiple segments to simplify analysis, and feature extraction, which identifies and describes unique attributes within an image for tasks like object detection and recognition. A foundational architecture enabling these capabilities is the Convolutional Neural Network (CNN), which processes images through successive layers of learned filters that progressively extract hierarchical visual representations, from low-level edges and textures to high-level semantic features such as product type or packaging format (Sadeghi-Tehran et al., 2019). These properties make CNNs particularly well-suited for tasks such as food product classification and ingredient identification from label images. These capabilities are directly applicable to the OCR pipeline described in Section 2.2.1, where text detection and recognition in high-resolution label images benefit significantly from convolutional feature extraction \parencite{renqing_luo_2e752c97}.
 
-Duis eget diam. In est justo, tristique in, lacinia vel, feugiat eget,
-quam. Pellentesque habitant morbi tristique senectus et netus et
-malesuada fames ac turpis egestas. Fusce feugiat, elit ac placerat
-fermentum, augue nisl ultricies eros, id fringilla enim sapien eu
-felis. Vestibulum ante ipsum primis in faucibus orci luctus et
-ultrices posuere cubilia Curae; Sed dolor mi, porttitor quis,
-condimentum sed, luctus in. 
+However, current vision encoder models still face limitations in simultaneously supporting both image and text recognition with human-like proficiency, especially when interpreting textual information embedded within complex document layouts such as tables, graphs, and mixed media (Zhu et al., 2024). This presents a significant challenge and demands the use of specialised multimodal learning approaches that can effectively integrate visual and linguistic cues to overcome these interpretation gaps. As explored in the following sections, the integration of vision encoders with Large Language Models, forming what are known as Vision-Language Models, represents a promising direction to address these limitations in the context of automated FoodEx2 classification.
 
-\section{Summary}
+\hypertarget{large-language-models-llms}{%
+\subsection{Large Language Models (LLMs)}\label{large-language-models-llms}}
 
-Aliquam erat volutpat. Nunc pede ipsum, porttitor eu, bibendum non,
-bibendum nec, nisl. Maecenas eget mauris. Nullam pulvinar. Curabitur
-rutrum commodo est. Nam sapien pede, interdum eu, accumsan ultrices,
-venenatis sit amet, tellus. Praesent ac ante bibendum enim varius
-suscipit. Donec enim. Proin nisi. Quisque libero turpis, varius ut,
-elementum vel, pulvinar sed, nunc. 
+Large Language Models are advanced neural network architectures, typically transformers, trained on vast corpora of text data to understand, generate, and process human language with remarkable fluency and coherence.
+
+These models excel at tasks such as text generation, summarisation, translation, and question answering, exhibiting an emergent capacity for complex reasoning and knowledge representation. Their architectural design, characterised by self-attention mechanisms, enables them to weigh the importance of different words in an input sequence, thereby capturing long-range dependencies crucial for contextual understanding. This capability allows LLMs to discern nuanced semantic relationships and infer contextual meaning from extensive textual inputs, making them highly effective for tasks requiring deep linguistic analysis.
+
+A common approach to enhancing their utility involves tokenising input sequences according to a predefined vocabulary and predicting the distribution of probabilities for the next token's occurrence, predominantly employing Transformer architecture \parencite{yuki_imajuku_f8c4877b}. While encoder-only models are adept at capturing document-specific information, and encoder-decoder models handle variable-length and multimodal inputs, recent decoder-only Large Language Models have demonstrated promising performance in understanding and generating document content by leveraging diverse multimodal datasets including image segmentation and layout information \parencite{weishi_wang_67b85d63}. This flexibility allows decoder-based LLMs to handle various text generation tasks, such as question answering and translation, without requiring specialised training or adjustments for each task (Zhang et al., 2024). Specifically, the evolution of language models, from statistical to neural, pre-trained, and ultimately large language models, reflects a progression towards more sophisticated context-aware representations and enhanced generative capabilities \parencite{pengfei_zhou_b2203b1e}.
+
+In the context of multimodal AI systems, LLMs serve as a powerful semantic backbone, interpreting linguistic elements extracted from documents and integrating them with visual information to provide comprehensive analysis for tasks like food item classification and compliance verification \parencite{yutong_zhang_e47bed88,chaoyang_zhu_ed468d29}.
+
+However, their general applicability often falters in specialised domains, where a lack of domain-specific training can lead to inaccuracies and ``hallucinations'' \parencite{mohbat_tharani_ccbd7a9f}. This limitation underscores the necessity for integrating LLMs with external knowledge sources, motivating the adoption of Retrieval-Augmented Generation, discussed in Section 2.3, as a complementary architecture to ground model outputs in the FoodEx2 knowledge base, thereby improving reliability and reducing spurious outputs.
+
+\hypertarget{vision-language-models-vlms}{%
+\subsection{Vision-Language Models (VLMs)}\label{vision-language-models-vlms}}
+
+Vision-Language Models represent a class of multimodal architectures that jointly process visual and textual information, bridging the gap between computer vision and natural language understanding. These models extend the capabilities of traditional LLMs by incorporating image encoders and projection layers, allowing them to interpret visual data encoded into tokens that align with textual representations, thereby enabling comprehensive understanding of multimodal inputs \parencite{zhipei_xu_621e96fd}.
+
+The core technical challenge in VLMs is the alignment of visual and linguistic representations into a shared semantic space, a process commonly referred to as cross-modal fusion. Three principal fusion strategies have been proposed in the literature. Early fusion integrates raw or low-level features from both modalities before any high-level processing, allowing the model to learn joint representations from the outset but requiring tightly coupled training data. Late fusion, by contrast, processes each modality independently through dedicated encoders and combines their outputs at the decision level, offering greater modularity but potentially losing fine-grained cross-modal interactions. Intermediate fusion, the dominant paradigm in contemporary VLMs, integrates modality-specific representations at intermediate layers through cross-modal attention mechanisms, enabling the model to selectively attend to relevant visual regions in response to linguistic queries or vice-versa \parencite{ye_jiang_6fce7e4a}. This is particularly powerful for document understanding tasks, where the spatial layout of visual elements carries semantic meaning, such as associating a product logo with its textual name, or linking the visual structure of a nutritional table to its encoded values.
+
+In the context of the IDRISK2 project, VLMs are particularly suited to the challenge of interpreting food product labels and packaging, where relevant information is conveyed through a combination of images, typographic elements, and structured text. By integrating the visual feature extraction capabilities described in Section 2.2.2 with the semantic reasoning of LLMs outlined in Section 2.2.3, VLMs enable a more comprehensive analysis of multimodal inputs, going beyond what OCR alone can capture in terms of layout understanding and visual context. By processing these heterogeneous inputs jointly, VLMs generate a unified multimodal representation of each food product that serves as the basis for FoodEx2 classification, going beyond what any single modality could capture in terms of layout understanding, visual context, and linguistic reasoning.
+
+However, VLMs still present limitations in specialised domains, particularly when precise and consistent classification is required. Their performance can be constrained by the quality and diversity of training data, and they may struggle to reliably adhere to structured taxonomies such as FoodEx2 without additional grounding mechanisms. This reinforces the need for a Retrieval-Augmented Generation framework, as discussed in Section 2.3, to complement VLM outputs with verified, domain-specific knowledge.
+
+\hypertarget{retrieval-augmented-generation-rag}{%
+\section{Retrieval-Augmented Generation (RAG)}\label{retrieval-augmented-generation-rag}}
+
+Retrieval-Augmented Generation is an architectural framework that enhances the capabilities of generative language models by combining them with a dynamic retrieval mechanism over external knowledge sources. RAG systems retrieve relevant documents or excerpts from a knowledge base at the time of inference, providing the language model with an up-to-date, domain-specific context to guide its outputs \parencite{patrick_lewis_10d460b7,xiaoye_qu_52f808ee}. In the context of the IDRISK2 project, this framework is directly applicable: it allows classification decisions to be grounded in the official FoodEx2 documentation published by the European Food Safety Authority (EFSA), ensuring that the model outputs remain aligned with the established regulatory taxonomy.
+
+\hypertarget{principles-of-rag}{%
+\subsection{Principles of RAG}\label{principles-of-rag}}
+
+The fundamental principle underlying RAG is the separation of parametric knowledge, embedded in model weights during training, from non-parametric knowledge, which is stored externally and retrieved on demand. This decoupling allows the system to remain factually accurate and current without requiring retraining, making it particularly well-suited for regulatory domains where taxonomies and guidelines are subject to periodic revisions \parencite{amin_haeri_1f9fd225}.
+
+A standard RAG pipeline consists of three sequential phases: indexing, retrieval, and generation. During indexing, source documents are preprocessed, segmented into chunks, and encoded into dense vector representations using embedding models, which are then stored in a vector database for efficient similarity search. At inference time, the retrieval phase queries this index to identify the most semantically relevant passages given an input. Finally, in the generation phase, the retrieved passages are concatenated with the original query and provided as context to the language model, which produces a response grounded in both the retrieved information and its parametric knowledge \parencite{harsh_chaudhari_a38f87a0,nirmal_kumar_roy_0d477fb0}. This architecture effectively reduces hallucinations by constraining model outputs to verifiable, domain-specific content, while also improving the interpretability and auditability of the system's decisions.
+
+A critical design decision in RAG systems is the chunking strategy, the method by which source documents are segmented prior to indexing. Fixed-size chunking divides documents into segments of a predetermined token length, offering simplicity and consistency but potentially fragmenting semantically coherent passages. Semantic chunking, by contrast, segments documents based on content boundaries such as sentences, paragraphs, or sections, preserving contextual integrity at the cost of variable chunk sizes (``Proceedings of the 19th Conference on Computer Science and Intelligence Systems (FedCSIS),'' 2024). For structured regulatory documents such as FoodEx2 technical guidelines, semantic chunking is particularly advantageous, as it ensures that hierarchical descriptor definitions and classification rules are not fragmented across multiple chunks, preserving the precision required for accurate retrieval.
+
+The quality of retrieval is further determined by the embedding model used to encode both document chunks and input queries into a shared vector space. Embedding models such as those based on the Sentence-BERT architecture or more recent models such as text-embedding-ada-002 generate dense vector representations that capture semantic similarity beyond lexical overlap, enabling the retrieval of contextually relevant passages even when exact terminology differs \parencite{maria_flavia_lovin_0fb6ab18}. The resulting vectors are stored in purpose-built vector stores such as FAISS, Chroma, or Pinecone, which support efficient approximate nearest neighbour search at scale.
+
+\hypertarget{rag-architectures}{%
+\subsection{RAG Architectures}\label{rag-architectures}}
+
+As the field has matured, three principal RAG architectural paradigms have emerged, each offering different trade-offs between simplicity, flexibility, and retrieval quality: naive RAG, advanced RAG, and modular RAG (Pipitone \& Alami, 2024; ``Proceedings of the 20th Conference on Computer Science and Intelligence Systems (FedCSIS),'' 2025).
+
+Naive RAG follows the straightforward pipeline described above, indexing, retrieval, and generation, and represents the foundational approach. While effective for simple, well-structured knowledge bases, it is sensitive to retrieval quality and can produce suboptimal results when queries are ambiguous or when retrieved passages lack sufficient specificity for complex classification tasks. Furthermore, naive retrieval relies exclusively on a single similarity search pass, without any mechanism to refine or validate the relevance of retrieved content before generation \parencite{yuhe_ke_37be3f59}.
+
+Advanced RAG addresses these limitations through the introduction of additional processing stages both before and after retrieval. Pre-retrieval techniques such as query rewriting, query expansion, and hypothetical document embeddings (HyDE) improve the alignment between the input query and the indexed content, compensating for vocabulary mismatches and semantic ambiguity \parencite{c__edwards_c148eac9,honglin_wan_dd61983a}. Post-retrieval enhancements, including re-ranking, filtering, and answer validation, further refine the retrieved document set to ensure maximal relevance and factual consistency with the generative model's output. These enhancements are particularly relevant for structured taxonomies such as FoodEx2, where subtle distinctions between food categories demand high retrieval precision and where a single misretrieved passage can propagate classification errors.
+
+Modular RAG extends this paradigm further by decomposing the pipeline into interchangeable functional components, including specialised retrievers, rerankers, memory modules, fusion mechanisms, and routing layers, that can be composed and adapted to specific task requirements \parencite{he_lin_7c94f881,andrea_matarazzo_da58af1d,aditi_singh_80d83cb6}. This flexibility enables the system to dynamically select retrieval strategies based on query characteristics, incorporate iterative retrieval loops for multi-step reasoning, and integrate multiple knowledge sources simultaneously. While Modular RAG offers the greatest adaptability, it also introduces greater implementation complexity and requires careful orchestration of its constituent components.
+
+A transversal dimension across all architectures is the choice of retrieval method. Sparse retrieval methods such as BM25 rely on lexical matching and term frequency statistics, offering computational efficiency and interpretability but limited ability to capture semantic relationships beyond exact matches \parencite{yunfan_gao_9386ae73}. Dense retrieval methods, by contrast, encode both queries and documents as continuous vector representations and retrieve based on semantic similarity, enabling more nuanced matching at the cost of higher computational overhead. Hybrid retrieval combines both approaches, typically through score fusion or reciprocal rank fusion, to leverage the complementary strengths of lexical precision and semantic generalisation, and has demonstrated superior performance across a range of domain-specific retrieval benchmarks \parencite{yunfan_gao_9386ae73,akshay_govind_srinivasan_fc4e560a}. This combined approach is particularly valuable in specialised fields where both precise keyword matching for rare entities and broad semantic understanding for complex concepts are critical, enhancing the overall robustness and accuracy of retrieval systems.
+
+\hypertarget{evaluation-of-rag-systems}{%
+\subsection{Evaluation of RAG Systems}\label{evaluation-of-rag-systems}}
+
+Evaluating RAG systems presents unique challenges, as performance depends on the quality of both the retrieval and generation components, as well as their interaction. A comprehensive evaluation framework must therefore assess each stage independently as well as the end-to-end system performance \parencite{ioannis_papadimitriou_0c7acc17}.
+
+At the retrieval level, standard information retrieval metrics such as Precision, Recall, and Mean Reciprocal Rank (MRR) measure the ability of the retriever to surface relevant passages given an input query. Context Precision quantifies the proportion of retrieved chunks that are genuinely relevant to the query, while Context Recall measures the extent to which all necessary information for a correct answer is present in the retrieved context \parencite{hao_yu_7fec6693}.
+
+At the generation level, faithfulness measures whether the model's output is factually grounded in the retrieved context, penalising responses that introduce information not supported by the retrieved passages. Answer Relevance assesses the degree to which the generated response directly addresses the input query, independent of faithfulness. Together, faithfulness and answer relevance form the core metrics of frameworks such as RAGAS \parencite{andrew_brown_84e43c08}, which has emerged as a widely adopted standard for automated RAG evaluation. Additionally, automated metrics like BERTScore, BLEU, and ROUGE evaluate the linguistic quality and similarity of the generated text to human-written references, albeit with limitations in assessing factual accuracy or semantic nuance.
+
+For domain-specific applications such as FoodEx2 classification, these general metrics must be complemented by task-specific evaluation criteria, including classification accuracy against ground truth FoodEx2 codes, consistency of outputs across semantically equivalent queries, and robustness to variations in input quality such as degraded OCR outputs or incomplete product descriptions. The definition of an appropriate evaluation protocol for the IDRISK2 system is discussed further in the Methodology chapter.
+
+\hypertarget{data-privacy-and-security}{%
+\section{Data Privacy and Security}\label{data-privacy-and-security}}
+
+The development and deployment of AI-powered systems within regulatory environments necessitates careful consideration of data privacy and security frameworks. Even in contexts where personally identifiable information is not directly processed, systems operating within the European Union are subject to a comprehensive legislative landscape governing data handling, model accountability, and the ethical use of automated decision-making. In the context of the IDRISK2 project, adherence to these frameworks is essential not only for legal compliance but also for ensuring the trustworthiness and auditability of the classification pipeline.
+
+\hypertarget{general-data-protection-regulation-gdpr}{%
+\subsection{General Data Protection Regulation (GDPR)}\label{general-data-protection-regulation-gdpr}}
+
+The General Data Protection Regulation, enforced since May 2018, establishes the primary legal framework governing data processing activities within the European Union and the European Economic Area, with extraterritorial reach impacting entities outside the EU that process data pertaining to EU citizens \parencite{salvatore_sapienza_0b06a4a0}. While its provisions are primarily directed at the protection of personal data, the GDPR introduces broader principles of data governance, including purpose limitation, data minimisation, and accountability, that are relevant to any AI system operating within EU jurisdiction, regardless of whether personal data is directly involved.
+
+Of particular relevance to automated classification systems is Article 22 of the GDPR, which addresses automated decision-making and profiling. Systems that produce decisions with legal or similarly significant effects based solely on automated processing are subject to specific obligations, including the right to human oversight and the provision of meaningful explanations for automated decisions \parencite{tuan_d__pham_cd6a9823}. Although the IDRISK2 system processes product data rather than personal data, the principle of explainability embedded in the GDPR aligns with broader requirements for transparency and accountability in regulatory AI applications, reinforcing the importance of interpretable classification outputs.
+
+Furthermore, the GDPR's principle of privacy by design mandates that data protection considerations be integrated into system architecture from the outset, rather than treated as an afterthought \parencite{jelena_schmidt_e77b64ec}. For the IDRISK2 system, this translates into ensuring that any product data ingested, processed, or stored during the classification pipeline is handled in accordance with the minimum necessary scope, with appropriate access controls and audit trails to support regulatory accountability.
+
+\hypertarget{principles-of-secure-ai-models}{%
+\subsection{Principles of Secure AI Models}\label{principles-of-secure-ai-models}}
+
+Beyond legislative compliance, the security of AI models deployed in regulatory contexts requires attention to a distinct set of technical and organisational principles. AI systems that inform compliance decisions are attractive targets for adversarial manipulation, and their outputs must be robust, reproducible, and resistant to exploitation through adversarial attacks or data integrity breaches \parencite{dhruvitkumar_v__talati_5e1ce083}.
+
+A foundational principle is model robustness, the capacity of the system to maintain accurate and consistent outputs when faced with noisy, incomplete, or adversarially perturbed inputs. In the context of the IDRISK2 system, this is particularly relevant given the variability of real-world food label images, which may present degraded text, inconsistent formatting, or partially occluded content. Robustness mechanisms, including input validation, confidence thresholding, and fallback procedures for low-quality inputs, are therefore integral to the system's security and trustworthiness, particularly when considering the potential for high-risk AI systems to impact health, safety, or fundamental rights \parencite{mateo_aboy_940b3b93}.
+
+A further concern is data integrity, ensuring that the knowledge bases and regulatory documents used by the RAG pipeline are authentic, unaltered, and sourced from authoritative repositories such as the EFSA. Any corruption or unauthorised modification of the retrieval index could propagate errors into the classification outputs, with potential consequences for regulatory compliance. Secure ingestion pipelines, version control of indexed documents, and cryptographic verification of source integrity are therefore recommended practices for RAG-based systems operating in high-stakes domains \parencite{alex_dantart_273f7ed0,christoforus_yoga_haryanto_549a697c}.
+
+Finally, the principle of transparency and auditability requires that the system's classification decisions be traceable and explainable to both technical and non-technical stakeholders. This aligns with the emerging EU AI Act framework, which classifies AI systems used in regulatory compliance contexts as high-risk, imposing obligations related to documentation, human oversight, and post-deployment monitoring \parencite{tomas_bueno_mom_ilovi__463b771a}. Designing the IDRISK2 system with these requirements in mind from the outset ensures that its deployment remains compliant with both current and anticipated regulatory obligations.

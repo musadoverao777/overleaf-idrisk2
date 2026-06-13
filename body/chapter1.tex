@@ -1,152 +1,74 @@
-\chapter{Introduction} \label{chap:intro}
+\hypertarget{introduction}{%
+\chapter{Introduction}\label{introduction}}
 
-This document illustrates the format to be used for dissertations at {FEUP}.
-Examples of margins are given, headings, titles, pagination, index styles, 
-etc. are given. 
-It also gives examples of formatting citations, figures and tables, 
-equations, cross-references, reference lists and indexes. 
-This document is not intended to exemplify content to be used.
-%A collection of existing standards can be found in~\textcite{kn:Mat93}.
+This chapter provides an overview of the IDRISK2 project, including its motivation, objectives, and the overarching problem it aims to solve within the context of European food safety regulations and data management.
 
-This first chapter illustrates the use of citations and references.
+\hypertarget{context-and-problem-statement}{%
+\section{Context and Problem Statement}\label{context-and-problem-statement}}
 
-\section{Section Example} \label{sec:se1}
+Food security represents a critical challenge, with significant implications for public health, economic stability, and societal well-being, particularly in the context of increasingly complex and globalised food supply chains. This complexity is further exacerbated by emerging food safety hazards stemming from factors such as climate change, novel materials in agri-food systems, and evolving dietary trends, necessitating advanced systems for their identification, assessment, and management \parencite{john_f__leslie_d22f2c65}.
 
-As well as giving an example of how to use a quotation, the 
-following paragraph introduces a reference that can be consulted, 
-among many other interesting bibliographical 
-references~\parencite{kn:Tha01,kn:PP05}.
+For this reason, the European Food Safety Authority (EFSA) has developed standardised frameworks such as FoodEx2 to classify and describe food products consistently, which is fundamental for effective food safety risk assessment \parencite{hern_n_g__redondo_919f3cec}. FoodEx2 is a hierarchical system that represents food items using base terms and facets, which add further information about the food items.
 
-\begin{quote}
-  ``Like the Abstract, the Introduction should be written to engage the
-  interest of the reader. It should also give the reader an idea of
-  how the dissertation is structured, and in doing so, define the
-  thread of the contents.''~\parencite[chap.\ Introduction]{kn:Tha01} 
-\end{quote}
+Within the FoodEx2 hierarchy, three main types of terms are defined: hierarchy terms (aggregated groups), core terms (representing the minimum level of detail for coding), and extended terms (providing additional detail beyond core terms) ((EFSA), 2015). In practice, food coding primarily relies on core and extended terms, collectively referred to as base terms. To further enhance the level of specificity, FoodEx2 incorporates facets, which describe additional characteristics of food items, such as origin, processing methods, physical state, and other relevant attributes. Additionally, some terms include implicit facets that are not explicitly codified but are inherently understood from the base term itself, such as those related to the source facet and the part-nature facet ((EFSA), 2015).
 
-\textcite{kn:Lip08} dolor sit amet, consectetuer adipiscing elit. 
-Sed eget nunc. Phasellus interdum, risus viverra mollis laoreet, felis
-justo iaculis ante, eget ornare purus augue non urna. Nam in magna. 
-In a est. Phasellus a tellus vitae enim vehicula imperdiet. 
-Etiam sit amet elit. In hac habitasse platea dictumst. 
-Quisque eget turpis vel felis elementum tempus. Curabitur sit 
-amet tortor id libero dapibus pretium. 
-Integer mattis eros eu lorem. Duis erat tellus, porttitor
-sed, blandit eget, fringilla et, lacus. Phasellus tristique nibh nec
-orci. Mauris sed leo. Suspendisse fringilla tempor dolor. Donec sapien
-enim, congue in, porta et, sollicitudin in, quam. Curabitur semper,
-mauris ut vestibulum eleifend, diam ipsum tincidunt quam, et
-vestibulum velit mauris ut risus. 
+The FoodEx2 represents a significant advancement in food classification and monitoring, enabling the standardised representation of food items through a harmonised coding scheme. Nevertheless, the manual mapping of food descriptions to FoodEx2 codes remains a time-consuming and error-prone process, often leading to inconsistencies in data reporting. This laborious manual classification not only hinders efficient data analysis but also complicates the comparison of food consumption data across diverse sources, ultimately impacting the accuracy of food safety risk predictions (Eftimov et al., 2017).
 
-Sed eget libero. Nulla facilisi. Proin eget tortor. Morbi
-gravida. Donec arcu risus, blandit a, rutrum at, ornare ut,
-nisl. Etiam consectetuer tortor eu odio. Etiam blandit molestie
-ligula. Nulla facilisi. Nam a augue non justo laoreet hendrerit. Nam
-aliquam, purus eu ultricies dictum, urna purus posuere neque, vel
-tempus tellus enim a arcu. 
+The inherent complexity of manually classifying vast quantities of diverse food data according to the intricate FoodEx2 hierarchy often leads to inconsistencies, delayed regulatory responses, and significant operational costs for food safety authorities and industry stakeholders. In this context, recent advances in artificial intelligence have spurred the development of innovative solutions aimed at improving the efficiency and accuracy of food classification. Nevertheless, a persistent methodological debate remains regarding the optimal approach for hierarchical classification within multi-dimensional taxonomies, specifically, the choice between fine-tuning versus retrieval-augmented strategies for mapping natural language inputs \parencite{lorenzo_molfetta_f41ce012}.
 
-Pellentesque congue sapien in ligula. Nulla nec mi sed augue congue
-tristique. Cras pretium. Pellentesque lobortis, libero id adipiscing
-auctor, orci massa vehicula nulla, vel ullamcorper tortor ipsum ut
-elit. Morbi rhoncus, dui sed tristique volutpat, lorem felis euismod
-lorem, vel tristique nibh arcu vel eros. Nunc tempor. Sed et erat a
-tortor fermentum consequat. Cras varius nisl accumsan libero. Aliquam
-faucibus, justo ut pharetra blandit, est nibh ultrices est, vel
-facilisis quam lectus ut enim. Aliquam convallis, nibh non bibendum
-pharetra, nisl velit lobortis orci, ac ultrices neque sem viverra
-massa. Donec malesuada. Aliquam ligula. Fusce in nisl. Etiam lacinia
-est quis velit. Maecenas massa. Maecenas sed pede. Nulla
-sodales. Etiam vitae erat. Duis tristique sem sit amet libero. Ut a
-libero nec ligula tempus mattis. 
+Moreover, despite this progress, AI models continue to encounter significant limitations, particularly when interpreting complex multimodal data while simultaneously ensuring adherence to strict data privacy regulations, such as the General Data Protection Regulation. These challenges underscore the necessity for further research into developing AI-enhanced systems tailored specifically for FoodEx2.
 
-\section{Section Example} \label{sec:ae2}
+Beyond these challenges, advanced AI models are susceptible to hallucinations, a phenomenon characterised by the generation of plausible yet factually incorrect or fabricated information, particularly in tasks that require accurate factual knowledge and contextual understanding. This vulnerability is particularly concerning in regulatory environments where the precision of automated risk assessment directly impacts public health outcomes \parencite{omer_faruk_sari_c479eead}. Furthermore, these models often require extensive training periods, which may limit their applicability in dynamic environments where continuous updates are necessary. This limitation is particularly relevant in the food domain, as the FoodEx2 classification system undergoes periodic updates, thus requiring adaptable and robust AI architectures.
 
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi sit
-amet nibh. Fusce faucibus, enim vel ultrices ornare, est mauris
-ultricies velit, vitae consequat sem erat vel nunc. Nam libero eros,
-mattis eget, sagittis nec, imperdiet at, sapien. Aliquam lacus. Aenean
-adipiscing nibh in orci. Aliquam vestibulum, elit at fringilla
-dignissim, metus diam lobortis urna, a laoreet nunc odio ac ipsum. Sed
-at urna. Integer vehicula fringilla augue. Nulla lacus eros, rhoncus
-sit amet, posuere ut, vehicula ac, nibh. Ut eleifend, eros eu placerat
-vehicula, justo turpis blandit dolor, eu tincidunt felis risus at
-ante. Aenean suscipit nisl eget eros. Ut laoreet libero eget
-enim. Cras tempus pellentesque felis. Vestibulum vitae erat ac nibh
-posuere eleifend. 
+\hypertarget{motivation}{%
+\section{Motivation}\label{motivation}}
 
-Integer nec quam. Sed fermentum. Nunc vitae leo. Etiam sit amet
-quam. Nunc vestibulum massa in mauris. Duis eget nulla. Fusce
-ultricies arcu eu nibh volutpat feugiat. Maecenas urna pede, commodo
-quis, porta eu, bibendum elementum, pede. Sed eros massa, molestie
-eget, mattis non, rutrum ac, magna. Duis dui. Maecenas eget tortor ut
-dolor semper mattis. Maecenas auctor, tellus et ultricies tempor, elit
-est placerat lacus, in posuere mauris lorem et arcu. 
+Motivated by the challenges in food classification, the IDRISK2 project addresses a critical bottleneck by proposing an AI-enhanced digital registration and analysis system designed to automate and streamline the process of FoodEx2 compliance. This system aims to improve data quality and facilitate more accurate risk assessments. Furthermore, it seeks to promote greater harmonisation of data collected by EFSA, contributing to more reliable and consistent food safety analyses.
 
-Nulla nec eros et pede vehicula aliquam. Aenean sodales pede vel
-ante. Fusce sollicitudin sodales lacus. Maecenas justo mauris,
-adipiscing vitae, ornare quis, convallis nec, eros. Etiam laoreet
-venenatis ipsum. In tellus odio, eleifend ac, ultrices vel, lobortis
-sed, nibh. Fusce nunc augue, dictum non, pulvinar sed, consectetuer
-eu, ipsum. Vivamus nec pede. Pellentesque pulvinar fringilla dolor. In
-sit amet pede. Proin orci justo, semper vel, vulputate quis, convallis
-ac, nulla. Nulla at justo. Mauris feugiat dolor. Etiam posuere
-fermentum eros. Morbi nisl ipsum, tempus id, ornare quis, mattis id,
-dolor. Aenean molestie metus suscipit dolor. Aliquam id lectus sed
-nisl lobortis rhoncus. Curabitur vitae diam sed sem aliquet
-tempus. Sed scelerisque nisi nec sem. 
+Beyond its regulatory impact, this project also addresses operational challenges, where the automation of food classification can significantly reduce the time and manual effort required from inspectors, increasing efficiency and reducing inconsistencies. In this context, IDRISK2 aims to optimise the workflow of the registration and analysis process, enabling resources to be allocated more strategically and proactively in risk detection activities.
 
-\section{Section Example} \label{sec:ae3}
+Additionally, the project contributes to technological innovation by exploring new use cases of artificial intelligence in food safety, combining Optical Character Recognition (OCR), Computer Vision, Vision-Language Models (VLMs), and Retrieval-Augmented Generation (RAG). The integration of these technologies enables digital registration systems to interpret and classify complex multimodal data more autonomously and accurately, improving the reliability of food classification processes.
 
-Integer nec quam. Sed fermentum. Nunc vitae leo. Etiam sit amet
-quam. Nunc vestibulum massa in mauris. Duis eget nulla. Fusce
-ultricies arcu eu nibh volutpat feugiat. Maecenas urna pede, commodo
-quis, porta eu, bibendum elementum, pede. Sed eros massa, molestie
-eget, mattis non, rutrum ac, magna. Duis dui. Maecenas eget tortor ut
-dolor semper mattis. Maecenas auctor, tellus et ultricies tempor, elit
-est placerat lacus, in posuere mauris lorem et arcu. 
+Finally, this research aims to provide scientific contributions by advancing the understanding of the applicability of multimodal AI models and RAG approaches in complex regulatory environments. This includes evaluating their capabilities and limitations in interpreting documents and images for compliance with standards such as FoodEx2. Furthermore, this study adopts a more nuanced perspective on the regulatory challenges posed by the EU AI Act, recognizing that compliance requires going beyond simple log registration to address complex issues of risk classification and transparency \parencite{idse_lucien_val_e2ea81c6}. By fostering critical discussion on these requirements, this research contributes to the development of future, more robust approaches in food safety systems.
 
-Nulla nec eros et pede vehicula aliquam. Aenean sodales pede vel
-ante. Fusce sollicitudin sodales lacus. Maecenas justo mauris,
-adipiscing vitae, ornare quis, convallis nec, eros. Etiam laoreet
-venenatis ipsum. In tellus odio, eleifend ac, ultrices vel, lobortis
-sed, nibh. Fusce nunc augue, dictum non, pulvinar sed, consectetuer
-eu, ipsum. Vivamus nec pede. Pellentesque pulvinar fringilla dolor. In
-sit amet pede. Proin orci justo, semper vel, vulputate quis, convallis
-ac, nulla. Nulla at justo. Mauris feugiat dolor. Etiam posuere
-fermentum eros. Morbi nisl ipsum, tempus id, ornare quis, mattis id,
-dolor. Aenean molestie metus suscipit dolor. Aliquam id lectus sed
-nisl lobortis rhoncus. Curabitur vitae diam sed sem aliquet
-tempus. Sed scelerisque nisi nec sem. 
+\hypertarget{research-questions}{%
+\section{Research Questions}\label{research-questions}}
 
-\section{Section Example} \label{sec:ae4}
+Based on the challenges and motivations identified in the previous sections, the following central research question is proposed.
 
-Integer nec quam. Sed fermentum. Nunc vitae leo. Etiam sit amet
-quam. Nunc vestibulum massa in mauris. Duis eget nulla. Fusce
-ultricies arcu eu nibh volutpat feugiat. Maecenas urna pede, commodo
-quis, porta eu, bibendum elementum, pede. Sed eros massa, molestie
-eget, mattis non, rutrum ac, magna. Duis dui. Maecenas eget tortor ut
-dolor semper mattis. Maecenas auctor, tellus et ultricies tempor, elit
-est placerat lacus, in posuere mauris lorem et arcu. 
+How can the integration of Artificial Intelligence techniques, combining computer vision, Optical Character Recognition, and large language models enhanced with Retrieval-Augmented Generation, improve the efficiency, accuracy, and security of the FoodEx2 coding process in digital food sample registration, ensuring compliance with EFSA standards and relevant regulatory cybersecurity requirements for food safety systems?
 
-Nulla nec eros et pede vehicula aliquam. Aenean sodales pede vel
-ante. Fusce sollicitudin sodales lacus. Maecenas justo mauris,
-adipiscing vitae, ornare quis, convallis nec, eros. Etiam laoreet
-venenatis ipsum. In tellus odio, eleifend ac, ultrices vel, lobortis
-sed, nibh. Fusce nunc augue, dictum non, pulvinar sed, consectetuer
-eu, ipsum. Vivamus nec pede. Pellentesque pulvinar fringilla dolor. In
-sit amet pede. Proin orci justo, semper vel, vulputate quis, convallis
-ac, nulla. Nulla at justo. Mauris feugiat dolor. Etiam posuere
-fermentum eros. Morbi nisl ipsum, tempus id, ornare quis, mattis id,
-dolor. Aenean molestie metus suscipit dolor. Aliquam id lectus sed
-nisl lobortis rhoncus. Curabitur vitae diam sed sem aliquet
-tempus. Sed scelerisque nisi nec sem. 
+\hypertarget{research-objectives}{%
+\section{Research Objectives}\label{research-objectives}}
 
-\section{Dissertation Structure} \label{sec:struct}
+To address the central research question, this dissertation aims to develop and evaluate an AI-driven system for automated FoodEx2 classification, ensuring compliance with EFSA standards and regulatory requirements.
 
-In addition to the introduction, this dissertation contains x more 
-chapters.
+To achieve this goal, the following specific objectives are defined:
 
-In Chapter~\ref{chap:ch2}, the state of the art is described and 
-related work is presented. 
-Chapter~\ref{chap:ch3}, ipsum dolor sit amet, consectetuer
-adipiscing elit.
+\begin{itemize}
+\item
+  Design a multimodal architecture integrating Optical Character Recognition (OCR), Computer Vision, and Large Language Models for food data interpretation
+\item
+  Develop a Retrieval-Augmented Generation (RAG) pipeline to support reliable and explainable FoodEx2 classification
+\item
+  Ensure compliance with GDPR and cybersecurity requirements for secure data processing
+\item
+  Evaluate the system performance using classification metrics such as accuracy, precision, recall, and processing time
+\item
+  Compare the proposed approach with baseline methods, including manual classification and non-RAG AI approaches
+\item
+  Assess the system's scalability and adaptability to evolving FoodEx2 standards
+\end{itemize}
+
+\hypertarget{scope-and-limitations}{%
+\section{Scope and Limitations}\label{scope-and-limitations}}
+
+Based on the motivations and objectives outlined, the scope of this research is limited to the development and evaluation of an AI-enhanced system tailored for FoodEx2 compliance within the context of digital food sample registration. This includes the classification of food items and ingredients according to the hierarchical structure of FoodEx2, incorporating both base terms and facets, while prioritizing the secure handling of multimodal data.
+
+Additionally, this research includes the development of a digital registration workflow that supports data capture at the point of sampling and the generation of structured FoodEx2 outputs. The evaluation will consider classification performance and usability within simulated or controlled scenarios aligned with regulatory workflows.
+
+The proposed system focuses on the use of artificial intelligence techniques to automate the interpretation of textual and visual information associated with food samples. This includes the extraction of textual information from product labels using Optical Character Recognition and the analysis of visual characteristics through Computer Vision techniques. Furthermore, the system explores the integration of Large Language Models with a Retrieval-Augmented Generation framework to enhance classification accuracy, explainability, and regulatory compliance.
+
+Moreover, the scope includes the development of a secure, closed AI model environment, ensuring data privacy and regulatory compliance by avoiding reliance on public cloud solutions or external unverified APIs. The system architecture will prioritize adherence to GDPR and other relevant cybersecurity protocols, ensuring robust data protection throughout the registration and analysis pipeline. However, it is important to note that, as a research prototype, this system focuses on foundational security and privacy principles rather than claiming full certification or compliance with the complex "high-risk" obligations stipulated by the EU AI Act (cf. Val, 2025 \parencite{idse_lucien_val_e2ea81c6}).
+
+However, this research acknowledges certain limitations. The inherent complexity and continuous evolution of the FoodEx2 taxonomy may require ongoing model retraining and adaptation, which fall outside the scope of this dissertation. Additionally, the proposed system will be developed as a research prototype and may not include full integration with existing regulatory infrastructures such as EFSA or LIMS systems. Furthermore, the evaluation will be conducted using selected datasets and scenarios, which may not fully represent the diversity of real-world food products and operational conditions.

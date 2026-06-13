@@ -1,0 +1,323 @@
+\hypertarget{methodology}{%
+\chapter{Methodology}\label{methodology}}
+
+This chapter describes the design and implementation strategy of the IDRISK2 system, detailing the architectural decisions, component configurations, and integration mechanisms. The methodology is structured to address each of the research objectives defined in Section 1.4, progressing from data collection and preprocessing (section 4.2) through to the individual processing modules, their integration, and the security and compliance mechanisms governing the system's deployment.
+
+\hypertarget{system-architecture-overview}{%
+\section{System Architecture Overview}\label{system-architecture-overview}}
+
+The IDRISK2 system is designed as a modular, end-to-end pipeline for automated FoodEx2 classification from multimodal food product data, as illustrated in Figure 4.1. The architecture integrates five principal layers that process the input sequentially from raw image to structured regulatory output.
+
+The pipeline begins with an OCR and image processing module that extracts raw textual content from food product label images using one of three configurable engines (Tesseract, EasyOCR, or PaddleOCR) selected based on comparative evaluation described in Section 4.3. The extracted text and preprocessed image are subsequently passed jointly to a Vision-Language Model module, where one of three interchangeable candidate models (GPT-4o, Claude or LLaVA-NeXT) generates a unified multimodal representation of the product through cross-modal attention mechanisms.
+
+This representation serves as the query input to the Advanced RAG pipeline, the central classification component of the system. The pipeline comprises three sequential stages: pre-retrieval enhancement through query rewriting and HyDE, hybrid retrieval combining dense semantic search with BM25 lexical matching via reciprocal rank fusion, and post-retrieval refinement through cross-encoder reranking and context compression. Retrieved passages are drawn from a Chroma vector store indexed over the official EFSA FoodEx2 documentation. The generation component then produces a structured FoodEx2 output, comprising a base term, applicable facets, a confidence score, and a traceable reference to the retrieved documentation.
+
+All processing occurs within a security and compliance layer that enforces closed deployment, GDPR compliance mechanisms, and audit logging throughout the pipeline, contributing to the system's alignment with the regulatory obligations of the EU AI Act for high-risk AI applications, serving as a foundational component within broader compliance efforts.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,keepaspectratio]{fig1.png}
+\caption{End-to-end architecture of the IDRISK2 pipeline. The diagram shows the flow from raw food image input through the preprocessing pipeline, OCR module (three engine options), VLM module (four model options), Advanced RAG pipeline with the FoodEx2 knowledge base, Generation module with structured FoodEx2 output, Security \& Compliance layer enforcing RBAC, data minimisation, and HMAC audit chaining, and the Web Frontend exposing role-specific views to inspectors, supervisors, administrators, and auditors.}
+\end{figure}
+
+\hypertarget{data-collection-and-preparation}{%
+\section{Data Collection and Preparation}\label{data-collection-and-preparation}}
+
+This section delineates the acquisition, annotation, and preprocessing protocols for the multimodal dataset employed in training and evaluating the IDRISK2 system, encompassing real-world photographs of both prepared dishes and packaged food products alongside the comprehensive FoodEx2 reference materials drawn from the EFSA Appendix B taxonomy.
+
+\hypertarget{sources-of-food-product-data}{%
+\subsection{Sources of Food Product Data}\label{sources-of-food-product-data}}
+
+The evaluation dataset comprises real-world food images captured manually using smartphones under varied lighting and environmental conditions, intentionally introducing the visual challenges characteristic of real-world food safety inspections. The dataset deliberately mixes two complementary scenarios: photographs of prepared dishes served without packaging (the dominant case in restaurant or refectory inspections) and photographs of packaged commercial products with visible labels (the dominant case in retail inspections).
+
+The dual-scenario composition reflects the architectural decision documented in Section 4.3.2 to treat OCR as a conditional rather than mandatory pipeline stage. Products span Portuguese, Brazilian, European, and international origins, with packaging labels in multiple languages including Portuguese, English, Spanish, French, and German, ensuring coverage of the multilingual variability expected in operational deployment. The preprocessing pipeline supports multiple input formats (JPG, PNG, WEBP, and HEIC, with HEIF/HEIC accepted via the pillow-heif dependency), and packaged products are photographed across multiple faces to capture the full label content.
+
+The 34 images of the present evaluation set constitute a pilot study, intentionally curated to assess the system's performance in challenging, real-world conditions. Although this limited sample size restricts the statistical generalisation of the results, it provides a focused case study for demonstrating the architectural feasibility of the IDRISK2 pipeline. To ensure operational robustness, the system retains support for diverse image formats, despite the present evaluation set being captured and stored in JPG, accommodating the varied inputs typical of smartphone-based inspections. The empirical breakdown of this set is detailed in Section 5.3. Future efforts will address the scalability of this evaluation, aiming to incorporate larger datasets comparable to those used in established food classification research to further validate the system's robustness and regulatory applicability.
+
+\hypertarget{data-annotation-for-foodex2}{%
+\subsection{Data Annotation for FoodEx2}\label{data-annotation-for-foodex2}}
+
+Each product sample is registered in the IDRISK2Dataset management system, which maintains a persistent index associating image paths with structured FoodEx2Annotation records. Each annotation captures the base term code and label, applicable facets with their descriptor codes, annotator identifier, annotation date, and a confidence level reflecting the annotator's certainty.
+
+The annotation schema is designed to support multi-annotator validation: when more than one annotator processes the same image, the annotator\_id field distinguishes their independent judgements and inter-annotator agreement can be computed on the resulting paired annotations using Cohen's Kappa (two annotators) or Fleiss's Kappa (three or more). The empirical evaluation reported in Chapter 5 was carried out under single-annotator ground truth, a deliberate scope decision documented in Section 6.6, and the multi-annotator validation that the schema supports is reserved for the larger-scale evaluation described in Section 8.5.
+
+\hypertarget{multimodal-data-preprocessing}{%
+\subsection{Multimodal Data Preprocessing}\label{multimodal-data-preprocessing}}
+
+The preprocessing pipeline, implemented in preprocessing.py, processes each image through four sequential stages. Images are first loaded with EXIF orientation correction to compensate for smartphone rotation metadata. A quality assessment stage then computes sharpness (Laplacian variance), brightness, and contrast metrics, flagging low-quality inputs for manual review. Accepted images undergo resizing to a standardised 1600\(\times\)1200 resolution with aspect-ratio-preserving padding, followed by denoising via fast non-local means filtering, deskewing via Hough line transform, and contrast enhancement via CLAHE in LAB colour space. Finally, a region-of-interest extraction stage uses adaptive thresholding and contour analysis to isolate text blocks, producing a binarised output optimised for OCR and an annotated image for visual inspection.
+
+\hypertarget{ocr-and-image-processing-module}{%
+\section{OCR and Image Processing Module}\label{ocr-and-image-processing-module}}
+
+\hypertarget{ocr-engine-selection-and-fine-tuning}{%
+\subsection{OCR Engine Selection and Fine-tuning}\label{ocr-engine-selection-and-fine-tuning}}
+
+The selection of an OCR engine for the IDRISK2 pipeline is treated as an empirical decision informed by comparative evaluation across three candidate systems: Tesseract, EasyOCR, and PaddleOCR. All three engines are configured to support the four target languages present in the evaluation dataset, English, Portuguese, Spanish, and French, and evaluated on a held-out subset of preprocessed food label images under identical conditions. It is important to acknowledge that this comparative evaluation is constrained by the limited dataset size. Given the significant variability in fonts, curved surfaces, and lighting conditions inherent in food labels, this sample size may not fully ensure the robustness and generalisability of the selected engine. Future work should expand the test set to further validate these findings across more diverse operational conditions.
+
+Tesseract is configured with the LSTM-based recognition engine (OEM 3) and sparse text page segmentation mode (PSM 11), which is appropriate for food labels where text is distributed non-linearly across the image rather than arranged in contiguous paragraphs. EasyOCR is initialised with the four target language models and run in CPU mode to ensure compatibility with the closed deployment environment. PaddleOCR is configured against its PaddleOCR 3.x API with textline orientation classification enabled (use\_textline\_orientation=True, the renamed successor of the angle-classification option from the 2.x API), which provides robustness to rotated text, a common characteristic of curved packaging surfaces captured by smartphone cameras. No specific PP-OCR model version is pinned in the deployment, so the default recognition model of the installed PaddleOCR release is used.
+
+All three engines share a common output interface defined by the OCRResult dataclass, which standardises extracted text, bounding box coordinates in (x, y, width, height) format, and a per-token confidence score normalised to the range {[}0, 1{]}. This normalisation ensures that downstream components of the pipeline, including the VLM module and the RAG query construction, operate on a consistent representation regardless of the engine selected.
+
+Engine performance is quantified using three complementary metrics: Character Error Rate (CER) and Word Error Rate (WER), computed against manually transcribed ground truth label text, and mean per-token confidence score. Processing time per image is additionally recorded to assess operational feasibility within the inspection workflow. The engine achieving the best aggregate performance across CER, WER, and processing time on the evaluation subset is selected as the default engine for the IDRISK2 pipeline, with the alternative engines retained as configurable options for deployment contexts with different label characteristics. Results of this comparative evaluation are reported in Section 5.3.
+
+\hypertarget{computer-vision-for-product-identification}{%
+\subsection{Computer Vision for Product Identification}\label{computer-vision-for-product-identification}}
+
+Prior to OCR, each image passes through the preprocessing pipeline described in Section 4.2.3, producing a standardised 1600\(\times\)1200 image with corrected orientation, reduced noise, and enhanced contrast. The OCR module additionally applies adaptive thresholding to produce a binarised version of the preprocessed image, which is provided to Tesseract and used as a fallback input for EasyOCR and PaddleOCR when the colour image yields low-confidence results. Bounding boxes returned by each engine are post-processed to merge fragmented tokens belonging to the same word, using a horizontal proximity threshold calibrated to the target image resolution. The resulting structured output, a list of OCRResult objects with text, position, and confidence, is passed to the VLM module as part of the multimodal product representation.
+
+\hypertarget{vision-language-model-selection-and-integration}{%
+\section{Vision-Language Model Selection and Integration}\label{vision-language-model-selection-and-integration}}
+
+\hypertarget{candidate-vlm-evaluation-gpt-4o-claude-llava}{%
+\subsection{Candidate VLM Evaluation (GPT-4o, Claude, LLaVA)}\label{candidate-vlm-evaluation-gpt-4o-claude-llava}}
+
+Three Vision-Language Models are implemented as interchangeable candidates for the central integration layer of the IDRISK2 pipeline: GPT-4o (OpenAI), Claude (Anthropic), and LLaVA (HuggingFace, open-source). The selection covers two principal deployment paradigms, proprietary cloud APIs and open-source local inference, and supports the architectural property of VLM substitutability documented in Section 4.4.3: switching from one VLM to another requires only changing a configuration entry and does not affect the retrieval or generation stages downstream.
+
+GPT-4o is accessed via the OpenAI Chat Completions API and represents the proprietary cloud-based paradigm. It offers state-of-the-art multimodal reasoning capabilities and native support for high-resolution image inputs with configurable detail levels. Its reliance on an external API introduces latency variability and requires that the OpenAI processing agreement be acceptable under the deploying authority's data-governance policy; in operational deployments where this constraint cannot be satisfied, GPT-4o is substituted by one of the local alternatives below.
+
+Claude is accessed via the Anthropic Messages API and represents an alternative proprietary cloud option with equivalent multimodal reasoning quality and a distinct safety-tuning regime. The motivating hypothesis for including Claude as a candidate is that the patterns of hallucination observed in structured-taxonomy classification (Section 6.4) may differ across proprietary models trained with different fine-tuning corpora and safety procedures, and a comparative evaluation across at least two strong proprietary VLMs is necessary to distinguish single-model failure modes from general failure modes of the VLM class. The default deployment uses claude-sonnet-4 for the balance of cost and quality, with claude-opus-4 available for highest-accuracy runs at increased cost and claude-haiku-4-5 for faster, cheaper inference where reasoning depth is less critical.
+
+LLaVA is an open-source instruction-tuned VLM that combines a Vicuna or Mistral language backbone with a CLIP vision encoder, designed for local inference via the HuggingFace Transformers library. The default configuration uses LLaVA-NeXT (LLaVA-1.6) with the Mistral-7B backbone, which is the strongest open-source LLaVA variant at the time of writing. The open-source nature of the model makes it fully compatible with the closed deployment requirement of Section 4.6, and its instruction-following capabilities are well-suited to structured classification tasks with explicitly defined JSON output formats.
+
+The empirical evaluation reported in Chapter 5 was conducted with all three implemented VLMs: GPT-4o (used as the primary configuration throughout Sections 5.3 to 5.6), Claude Sonnet 4.6 (used in the cross-VLM comparison of Section 5.7.2), and LLaVA-NeXT-Mistral-7B (used as the open-source baseline in the same comparison). The three implementations are retained in the production codebase to support deployment-time substitution of the VLM layer in operational contexts where the data-governance constraints of the proprietary APIs cannot be satisfied, or where a fully self-hosted configuration is required.
+
+\hypertarget{prompt-engineering-for-foodex2-classification}{%
+\subsection{Prompt Engineering for FoodEx2 Classification}\label{prompt-engineering-for-foodex2-classification}}
+
+All three VLMs are governed by a unified structured prompting strategy designed to elicit precise, FoodEx2-compliant outputs in a consistent JSON format, despite the different prompt-template conventions of the underlying APIs. The prompt architecture consists of three components: a system prompt that defines the classification task, the FoodEx2 output schema, and the confidence rubric; a few-shot example drawn from the FoodEx2 documentation that illustrates the expected reasoning and output structure; and a per-sample user prompt that provides the OCR-extracted label text and instructs the model to analyse both the image and the text jointly before producing its classification. The three VLM-specific adapters in the implementation are responsible for translating this unified prompt into the API conventions of GPT-4o (Chat Completions messages with image\_url content blocks), Claude (Messages API with image content blocks under a top-level system field), and LLaVA-NeXT (Mistral chat template with an interleaved image token), without exposing those differences to downstream code.
+
+Chain-of-thought reasoning is encouraged through the reasoning field of the required JSON output, which instructs the model to articulate its classification rationale step-by-step before committing to a final code assignment. This approach serves two purposes: it improves classification accuracy on ambiguous cases by forcing the model to reason explicitly through the evidence, and it produces a human-readable audit trail that supports the explainability requirements applicable to the system under the GDPR and the EU AI Act. Although this CoT-based transparency provides meaningful support for these obligations, it represents only one dimension of the broader, comprehensive legal compliance framework mandated for high-criticality AI systems.
+
+Temperature is set to 0.1 across all models to minimise output variability and promote deterministic classification behaviour, consistent with the precision requirements of the FoodEx2 taxonomy. Prompt templates are refined iteratively on a development subset of the dataset, with systematic adjustments targeting the most frequent error categories identified in initial evaluations.
+
+\hypertarget{multimodal-feature-integration}{%
+\subsection{Multimodal Feature Integration}\label{multimodal-feature-integration}}
+
+Each VLM receives as joint input the preprocessed food label image, encoded as a base64 JPEG string, and the OCR-extracted text produced by the module described in Section 4.3. This dual input design ensures that the model can leverage both the visual layout and spatial organisation of the label and the textual content extracted by the OCR engine, compensating for cases where one modality is unreliable, such as degraded OCR output on heavily stylised fonts, or partially occluded visual elements. The unified VLMOutput dataclass provides a model-agnostic representation of the classification result, including the base term code and label, applicable facets, reasoning chain, confidence level, and the raw model response retained for audit purposes.
+
+\hypertarget{retrieval-augmented-generation-implementation}{%
+\section{Retrieval-Augmented Generation Implementation}\label{retrieval-augmented-generation-implementation}}
+
+\hypertarget{knowledge-base-construction-for-foodex2}{%
+\subsection{Knowledge Base Construction for FoodEx2}\label{knowledge-base-construction-for-foodex2}}
+
+The RAG knowledge base is constructed from two complementary sources published by the EFSA, each addressing a distinct retrieval need. The first source comprises the official FoodEx2 technical documentation: the original system description (The food classification and description system FoodEx2, Revision 2) together with the annual maintenance reports published between 2019 and 2025. These documents describe the taxonomy's governance, descriptor philosophy, facet semantics, and the year-on-year evolution of approved terms, context essential for interpreting why a given classification decision is correct, but insufficient on its own to surface candidate base term codes during retrieval.
+
+The second source is the FoodEx2 Catalogue Browser export (Appendix B), distributed by EFSA as an XLSX workbook containing the full taxonomy: 31,303 approved terms and 298 deprecated terms organised across the hierarchy, reporting, exposure, ingredient, and pesticide views. Each row provides the term code, extended name, scope note, scientific and common names, and the implicit facet expression, the raw material that the generation component needs to assign a specific base term to a food product. Deprecated terms are filtered out at ingestion, as they are not valid targets for new classifications.
+
+The two sources require different segmentation strategies. The technical PDFs are partitioned through LlamaIndex's SemanticSplitterNodeParser, which detects content boundaries using embedding-based similarity rather than fixed token counts, preserving descriptor definitions and classification rules as coherent semantic units. A fixed-size fallback strategy with 512-token chunks and 64-token overlap is retained as a configurable alternative for documents with less structured layouts. The taxonomy XLSX, by contrast, is ingested without further chunking: each FoodEx2 term is converted into a single atomic node whose chunk identifier mirrors the term code (for example, term\_A03VY). This decision reflects three considerations. First, each term entry is already a self-contained semantic unit of approximately 100--250 tokens, well within the embedding model's effective context window, so further splitting would gain nothing in retrieval precision. Second, partitioning a term across multiple chunks would scatter its name, scope note, and implicit facet expression into separate retrieval candidates, breaking the assumption that the cross-encoder reranker compares the query against complete term entries. Third, atomic term nodes establish a direct one-to-one mapping between citations and FoodEx2 codes, ensuring that every chunk identifier in an audit record can be deterministically resolved to a single taxonomy entry, a property essential for the explainability and post-hoc inspection requirements of Article 22 of the GDPR.
+
+Both source streams are encoded into dense vector representations using the BAAI/bge-m3 multilingual embedding model, selected for its strong performance on technical domain text and its native support for the four target languages of the evaluation dataset. The model runs entirely locally, without external API dependency, ensuring GDPR compliance throughout the indexing pipeline. The combined corpus, approximately 31,900 nodes in the final configuration, is stored in a Chroma persistent vector store, enabling efficient approximate nearest neighbour search at inference time.
+
+Knowledge base provenance is recorded in a manifest file capturing the full set of source files (PDFs and XLSX), the FoodEx2 version identifier (FoodEx2-Appendix-B for taxonomy nodes, with PDF-side version detection retained for the technical documents), the embedding model, the chunking strategy applied to each stream, the total node count, and a SHA-256 checksum computed over all node texts. This checksum enables cryptographic integrity verification at deployment time, detecting any unauthorised modification of the retrieval index that could propagate errors into the classification pipeline. The full heterogeneous-chunking knowledge-base construction methodology is illustrated in Figure 4.2.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,keepaspectratio]{fig2.png}
+\caption{Heterogeneous knowledge-base construction methodology (Section 4.5.1). Two source streams published by EFSA, the FoodEx2 technical PDFs (Revision 2 and the 2019 to 2025 annual maintenance reports) and the Appendix B XLSX catalogue (31,303 approved terms after filtering 298 deprecated entries), are ingested through distinct chunking strategies tailored to their respective structure: semantic splitting via LlamaIndex's SemanticSplitterNodeParser for the PDFs (589 chunks preserving descriptor definitions and classification rules as coherent semantic units) and atomic ingestion for the XLSX (one node per term with chunk\_id mirroring the term code). Both streams are encoded with the BAAI/bge-m3 multilingual embedding model under fully local inference and stored in the Chroma persistent vector store (31,892 nodes total), with a parallel BM25 docstore over the same corpus supporting lexical retrieval. A provenance manifest records source filenames, FoodEx2 version identifier, embedding model, chunking strategy, and a SHA-256 checksum over all node texts for cryptographic integrity verification at deployment time.}
+\end{figure}
+
+\hypertarget{advanced-rag-pipeline-design}{%
+\subsection{Advanced RAG Pipeline Design}\label{advanced-rag-pipeline-design}}
+
+The retrieval component implements an Advanced RAG architecture organised into three sequential stages: pre-retrieval enhancement, hybrid retrieval, and post-retrieval refinement. The end-to-end data flow is illustrated in Figure 4.3.
+
+At the pre-retrieval stage, the multimodal product description produced by the VLM module undergoes two parallel transformations. Query rewriting reformulates the description using FoodEx2 terminology, compensating for vocabulary mismatches between colloquial product language and the technical vocabulary of the EFSA documentation. Hypothetical Document Embedding (HyDE) generates a synthetic passage mimicking the style and terminology of the FoodEx2 technical guidelines, which is used as the primary retrieval query for dense search, replacing the original description with a representation that is semantically closer to the indexed content and therefore more likely to surface the most relevant taxonomy entries.
+
+The retrieval stage combines dense semantic search over the Chroma vector store with sparse BM25 lexical retrieval. Dense retrieval returns the top-10 candidates ranked by cosine similarity to the HyDE-generated query embedding, capturing semantically related passages even when exact terminology differs. Sparse retrieval applies BM25 to the rewritten query, returning the top-10 candidates ranked by term frequency statistics, ensuring that passages containing specific FoodEx2 base term codes or facet descriptors are surfaced even if their semantic embedding is not among the closest neighbours. The two candidate sets are merged using Reciprocal Rank Fusion with the standard constant k = 60, which assigns a combined score to each unique passage based on its rank position in both retrieval lists, producing a single unified ranking that leverages the complementary strengths of both approaches.
+
+At the post-retrieval stage, the fused candidate set is reranked using a ColBERT cross-encoder, which performs token-level interaction between the rewritten query and each passage to produce more precise relevance scores than the bi-encoder similarity used in dense retrieval. The reranked passages are subsequently filtered by a minimum similarity threshold, deduplicated to remove near-identical content, and truncated to a maximum context length of 6,000 characters to ensure compatibility with the generation component's context window. Each retained passage is tagged with its source document filename and chunk identifier, providing a traceable reference for every element of the context injected into the generation prompt.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,keepaspectratio]{fig3.png}
+\caption{Detailed architecture of the Advanced RAG pipeline (Section 4.5.2). Stage 1 performs query rewriting and HyDE synthesis on the VLM-produced multimodal description. Stage 2 executes hybrid retrieval: dense semantic search using the BAAI/bge-m3 embedding over the HyDE passage and BM25 lexical retrieval over the rewritten query, both returning the top-10 candidates from the Chroma-backed corpus, with the two ranked lists merged through Reciprocal Rank Fusion (k = 60). Stage 3 reranks the fused pool with a ColBERT cross-encoder, filters passages below a similarity threshold, deduplicates near-identical content, and truncates the context to 6,000 characters before passing the top-5 traceable passages, together with their dense, RRF, and rerank scores, to the Generation module described in Section 4.5.3.}
+\end{figure}
+
+\hypertarget{generation-component-for-foodex2-classification}{%
+\subsection{Generation Component for FoodEx2 Classification}\label{generation-component-for-foodex2-classification}}
+
+The generation component receives the compressed, reranked retrieval context assembled by the pipeline described in Section 4.5.2 and produces a structured FoodEx2 classification output grounded exclusively in the retrieved EFSA documentation. The generation prompt is structured in two parts: a system prompt that defines the classification task, the required JSON output schema, and the instruction to base all classification decisions solely on the provided context; and a user prompt that presents the retrieved passages alongside the multimodal product description produced by the VLM module.
+
+The system prompt explicitly instructs the model to cite specific retrieved passages in its reasoning, establishing a direct traceable link between each element of the classification output and the corresponding FoodEx2 documentation. This design ensures that the system's decisions are not only grounded in authoritative regulatory content but are also explainable and auditable, satisfying the transparency requirements of Article 22 of the GDPR and the documentation obligations of the EU AI Act for high-risk AI systems.
+
+Output validation enforces the required FoodEx2 schema, comprising the base term code, base term label, facets dictionary, reasoning chain, and confidence level, through a structured parsing and validation function. If the initial generation fails schema validation, the system automatically retries up to two times with a corrective prompt, before defaulting to an UNKNOWN classification with low confidence flagged for human review. The human-review policy is governed by a configurable REVIEW\_TRIGGER\_LEVELS set, which by default flags any classification with low or medium confidence, leaving only high-confidence outputs to proceed without oversight. This conservative default aligns with the human-oversight requirement of Article 14 of the EU AI Act for high-risk AI systems, and can be relaxed by supplying a custom trigger set (e.g. \{Confidence.LOW\}) to the generation component for deployment contexts that tolerate greater autonomy.
+
+Each classification decision is persisted as a structured JSON audit record containing the full classification result, the retrieved source documents and chunk identifiers, the model used, the timestamp, the raw generation output, and the human review flag. This audit trail supports post-hoc inspection of any classification decision and provides the documentation required for regulatory accountability.
+
+\hypertarget{security-and-privacy-enhancements}{%
+\section{Security and Privacy Enhancements}\label{security-and-privacy-enhancements}}
+
+\hypertarget{secure-model-deployment}{%
+\subsection{Secure Model Deployment}\label{secure-model-deployment}}
+
+The IDRISK2 system is designed for fully self-hosted deployment, with all model inference, including OCR, VLM processing, and RAG generation, performed locally on infrastructure controlled by the deploying organisation. No product data is transmitted to external services at any stage of the pipeline, ensuring compatibility with the data governance requirements of official regulatory bodies and the principle of privacy by design mandated by Article 25 of the GDPR.
+
+Access to the system is governed by a role-based access control framework defining four roles: Inspector, Supervisor, Administrator, and Auditor. Each role is assigned a specific set of permissions, including submission of classification requests, access to results, management of the knowledge base, and access to audit records, enforced at the function level through a permission decorator that logs and rejects unauthorised access attempts. This granular access model ensures that sensitive system functions are accessible only to authorised personnel, in accordance with the principle of least privilege.
+
+Input validation is applied to all incoming data before processing. Image inputs are validated against maximum size constraints, an allowed MIME type allowlist, and magic byte verification to detect format spoofing. OCR-extracted text is sanitised to remove control characters and truncated to a maximum length prior to prompt injection, mitigating the risk of prompt injection attacks through maliciously crafted label content.
+
+\hypertarget{gdpr-compliance-mechanisms}{%
+\subsection{GDPR Compliance Mechanisms}\label{gdpr-compliance-mechanisms}}
+
+Data minimisation is enforced at the record level through the MinimisedProductRecord dataclass, which retains only the OCR-extracted text, the FoodEx2 classification result, and a SHA-256 hash of the original image for deduplication purposes. Raw image bytes are discarded immediately after feature extraction, in accordance with Article 5(1)(c) of the GDPR. Each minimised record is subsequently persisted as a JSON document in the configured records directory by the save\_minimised\_record function, enabling subsequent retrieval for legitimate purposes while preserving the deletion of raw image content. A configurable retention policy automatically deletes classification records after one year and audit logs after seven years, reflecting standard regulatory retention requirements.
+
+Audit logging is implemented through a tamper-evident HMAC chaining mechanism. Each audit entry records the event type, user identifier, event details, timestamp, and an HMAC computed over the entry content keyed to a deployment-specific secret. Each entry additionally includes the HMAC of the preceding entry, forming a cryptographically linked chain that renders any post-hoc modification detectable through the verify\_chain method. To preserve the integrity of this verification, audit storage is partitioned into two distinct directories: a chain-verified directory holding only the tamper-evident HMAC entries written by the AuditLogger, and a separate generation-records directory holding the per-classification provenance records emitted by the generation component. This separation prevents the unstructured generation records from being misinterpreted as broken links during chain verification. Together, the two directories satisfy the documentation and traceability obligations of the EU AI Act for high-risk AI systems, enabling post-hoc inspection of any classification decision by authorised auditors.
+
+System configuration is managed exclusively through environment variables, with required variables validated at startup. Sensitive credentials, including the audit HMAC key and, where applicable, the OpenAI API key (for GPT-4o) or the Anthropic API key (for Claude), are never hardcoded or persisted in source files, in accordance with secure credential management best practices.
+
+\hypertarget{implementation-notes}{%
+\section{Implementation Notes}\label{implementation-notes}}
+
+\hypertarget{technology-stack}{%
+\subsubsection{Technology Stack}\label{technology-stack}}
+
+The IDRISK2 system is implemented in Python 3.11, selected for its mature ecosystem of AI and computer vision libraries and its widespread adoption in academic research contexts. Table 4.1 summarises the principal technologies and frameworks used across the pipeline modules.
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule
+\endhead
+\textbf{Component} & \textbf{Technology} & \textbf{Version}\tabularnewline
+RAG Framework & LlamaIndex & \(\ge\) 0.10.40\tabularnewline
+Vector Store & ChromaDB & \(\ge\) 0.5.0\tabularnewline
+Embedding Model & BAAI/bge-m3 &\tabularnewline
+Sparse Retriever (BM25) & llama-index-retrievers-bm25 & \(\ge\) 0.2.0\tabularnewline
+Cross-encoder Reranker (ColBERT) & llama-index-postprocessor-colbert-rerank & \(\ge\) 0.1.4\tabularnewline
+FoodEx2 XLSX ingestion & openpyxl & \(\ge\) 3.1.2\tabularnewline
+OCR, Option A & Tesseract / pytesseract & \(\ge\) 0.3.13\tabularnewline
+OCR, Option B & EasyOCR & \(\ge\) 1.7.1\tabularnewline
+OCR, Option C & PaddleOCR & \(\ge\) 2.7.3\tabularnewline
+VLM, Option A & GPT-4o (OpenAI API) & openai \(\ge\) 1.30.0\tabularnewline
+VLM, Option B & Claude (Anthropic API) & anthropic \(\ge\) 0.34.0\tabularnewline
+VLM, Option C & LLaVA-NeXT (HuggingFace) & transformers \(\ge\) 4.45.0\tabularnewline
+Image Processing & OpenCV & \(\ge\) 4.9.0\tabularnewline
+HEIC Support & pillow-heif & \(\ge\) 0.16.0\tabularnewline
+LLM Generation & OpenAI SDK & \(\ge\) 1.30.0\tabularnewline
+Evaluation Metrics (CER/WER) & editdistance & \(\ge\) 0.8.1\tabularnewline
+Frontend Framework & React + TypeScript + Vite & React \(\ge\) 18\tabularnewline
+UI Component Library & shadcn/ui (Radix UI primitives) &\tabularnewline
+Styling & Tailwind CSS & \(\ge\) 4.0\tabularnewline
+Data Visualisation (frontend) & Recharts &\tabularnewline
+\bottomrule
+\end{longtable}
+
+\emph{Table 4.1, Technology stack of the IDRISK2 system}
+
+\hypertarget{project-structure}{%
+\subsubsection{Project Structure}\label{project-structure}}
+
+The codebase is organised into two top-level deliverables: the Python backend that implements the classification pipeline described in Sections 4.2--4.6, and the web frontend that exposes the pipeline through role-based screens as documented in Section 4.8.
+
+\begin{verbatim}
+Dissertação/
+|-- idrisk2/ <- Python backend (classification pipeline)
+| |-- pipeline.py <- End-to-end pipeline entry point
+| |-- requirements.txt <- Dependency specification
+| `-- src/
+| |-- common/types.py <- Shared Confidence enum and review-trigger policy
+| |-- data/preprocessing.py <- Image loading and preprocessing (4.2)
+| |-- ocr/engine.py <- OCR engine abstraction and benchmarking (4.3)
+| |-- vlm/vlm.py <- VLM integration: GPT-4o, Claude, LLaVA-NeXT (4.4)
+| |-- rag/
+| | |-- knowledge_base.py <- FoodEx2 knowledge base construction (4.5.1)
+| | |-- retrieval.py <- Advanced RAG retrieval pipeline (4.5.2)
+| | `-- generation.py <- FoodEx2 generation and audit (4.5.3)
+| `-- security/security.py <- RBAC, audit logging, GDPR mechanisms (4.6)
+|
+`-- Idrisk2webappinterface/ <- Web frontend (inspector workflow UI)
+|-- src/
+| |-- App.tsx <- Role-based routing (Inspector/Supervisor/Admin/Auditor)
+| |-- components/
+| | |-- LoginScreen.tsx <- Role-aware authentication
+| | |-- InspectorSubmission.tsx <- Image upload + live pipeline progress
+| | |-- InspectorHistory.tsx <- Per-user classification history
+| | |-- SupervisorDashboard.tsx <- Metrics, review queue, confidence charts
+| | `-- AdministratorUsers.tsx <- User and role management
+| `-- components/ui/ <- shadcn/ui primitives (Radix UI)
+|-- package.json
+`-- vite.config.ts <- Vite build configuration
+\end{verbatim}
+
+\hypertarget{installation-and-configuration}{%
+\subsubsection{Installation and Configuration}\label{installation-and-configuration}}
+
+The system is configured entirely through environment variables, consistent with the secure configuration management approach described in Section 4.6.2. Prior to execution, the following variables must be set:
+
+\begin{verbatim}
+# Required
+export IDRISK2_AUDIT_KEY="<secure-random-key>"
+export IDRISK2_DATA_DIR="/path/to/data"
+export IDRISK2_DOCS_DIR="/path/to/efsa/documents"
+# Required only if using the GPT-4o VLM (default)
+export OPENAI_API_KEY="<openai-api-key>"
+# Required only if using the Claude VLM
+export ANTHROPIC_API_KEY="<anthropic-api-key>"
+# Optional VLM selection: gpt4o (default) | claude | llava
+export IDRISK2_VLM_MODEL="gpt4o"
+\end{verbatim}
+
+Backend dependencies are installed via:
+
+\begin{quote}
+cd idrisk2
+
+pip install -r requirements.txt
+\end{quote}
+
+The web frontend described in Section 4.8 is installed and started separately:
+
+\begin{verbatim}
+cd Idrisk2webappinterface
+pnpm install
+pnpm dev # development server (Vite)
+pnpm build # production build
+\end{verbatim}
+
+A classification request can be submitted programmatically against the backend as follows:
+
+\begin{quote}
+from pipeline import IDRISK2Pipeline
+
+from src.security.security import User, Role
+
+pipeline = IDRISK2Pipeline.from\_env()
+
+user = User(
+
+user\_id="u001",
+
+username="inspector\_a",
+
+role=Role.INSPECTOR,
+
+created\_at="2025-01-01",
+
+)
+
+result = pipeline.classify(
+
+image\_path="product\_label.jpg",
+
+user=user,
+
+)
+
+print(result.classification.base\_term\_code)
+
+print(result.classification.reasoning)
+\end{quote}
+
+In normal operational use, the same call is invoked through the web frontend's Inspector Submission screen, with the User object resolved at login time from the authenticated role (Section 4.8).
+
+\hypertarget{web-interface-for-operational-deployment}{%
+\section{Web Interface for Operational Deployment}\label{web-interface-for-operational-deployment}}
+
+The IDRISK2 pipeline as documented in Sections 4.2--4.6 exposes a programmatic API; for the inspector and supervisor workflows that motivate the system in Section 1.2, a graphical user interface is required to make the pipeline operationally usable in the field. This section describes the web frontend that exposes the pipeline through role-aware screens aligned with the role-based access control framework defined in Section 4.6.1.
+
+The frontend is implemented as a single-page application using React 18 with TypeScript, built and bundled with Vite. Component primitives are drawn from the shadcn/ui library, which is itself layered over Radix UI, and styled with Tailwind CSS v4 to ensure consistent visual presentation across the role-specific views. Data visualisations on the supervisor dashboard are rendered with Recharts, chosen for its compatibility with the React component model and its declarative API for the time-series and distribution plots required by the review-queue and confidence-distribution views. The full frontend technology stack is reported in Table 4.1 alongside the backend dependencies, and the project layout is shown in the codebase tree above.
+
+The application's routing layer enforces the role-based access control framework of Section 4.6.1: the four roles defined in that framework (Inspector, Supervisor, Administrator, and Auditor) are surfaced as distinct top-level views, with the available navigation determined at login time by the role attached to the authenticated user. The roles defined in the backend permissions table thus map directly to the menu structure of the frontend, ensuring that no screen exposes functionality beyond what the backend's permission decorator would authorise, defence-in-depth between the presentation layer and the API layer, rather than client-side gating alone.
+
+Five screens implement the operational workflows of the system. The login screen accepts credentials and resolves the user's role, redirecting to the appropriate landing view. The Inspector submission screen accepts image uploads and renders a progress bar that tracks the pipeline through its sequential stages, OCR, VLM, RAG retrieval, and final classification, providing live visibility into the per-image latency profile reported in Section 5.6. The Inspector history screen presents the inspector's own past classifications with their final FoodEx2 codes, confidence levels, and audit identifiers, drawn from the minimised product records persisted by the save\_minimised\_record function of Section 4.6.2. The Supervisor dashboard aggregates the team-level view: review-queue items flagged by the human-review trigger of Section 4.5.3, distribution plots over confidence levels, and per-day classification throughput. The Administrator user-management screen exposes the create-update-deactivate operations for users and role assignments, subject to the manage\_users permission defined in Section 4.6.1.
+
+This frontend is the user-facing component of the decision-support deployment model proposed in Section 6.4. The progress visualisation surfaces the system's latency profile to the inspector at submission time, the supervisor dashboard's review queue materialises the human-oversight mechanism that the EU AI Act requires for high-risk AI systems, and the per-classification provenance records described in Section 4.6.2 are made directly visible to supervisors and auditors through the history and dashboard screens. Full operational deployment in a regulatory authority would require the additional integration work with LIMS, inspection-workflow systems, and the EFSA Data Collection Framework outlined in Section 8.3; the present implementation establishes the user-facing layer required for any such deployment and is ready to operate as a standalone decision-support tool in supervised pilot contexts.

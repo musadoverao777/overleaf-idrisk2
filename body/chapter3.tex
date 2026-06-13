@@ -1,296 +1,155 @@
-\chapter{Chapter WITH Examples} \label{chap:ch3}
+\hypertarget{literature-review}{%
+\chapter{Literature Review}\label{literature-review}}
 
-Maecenas eleifend facilisis leo. Vestibulum et
-mi. Aliquam posuere, ante non tristique consectetuer, dui elit
-scelerisque augue, eu vehicula nibh nisi ac est. 
-Suspendisse elementum sodales felis. Nullam laoreet fermentum urna. 
+Building on the foundational concepts established in Chapter 2, this chapter critically examines existing research and implemented solutions at the intersection of food safety and artificial intelligence, focusing on the applications of these technologies, identified limitations, and existing gaps that the IDRISK2 system seeks to fill.
 
-\section{Introduction}
+The review begins by surveying existing approaches to automated food data classification, from early rule-based systems to more recent machine learning methods (3.1). It then examines the application of AI techniques in food safety and traceability contexts, with particular attention to the use of OCR and computer vision (3.2.1) and large language models for food information extraction (3.2.2). The integration of multimodal AI for document processing is subsequently addressed (3.3), followed by a discussion of security and compliance considerations in AI deployments (3.4). The chapter concludes by identifying the key gaps in current research and technology that motivate the proposed approach (3.5).
 
-Pellentesque rutrum, sapien at viverra 
-facilisis\footnote{\url{https://en.wikipedia.org/wiki/Equation}}\footnote{\url{https://www.overleaf.com/learn/latex/Mathematical_expressions}}:
+\hypertarget{existing-systems-for-food-data-classification}{%
+\section{Existing Systems for Food Data Classification}\label{existing-systems-for-food-data-classification}}
 
-\begin{eqnarray}
-CIF_1: \hspace*{5mm}F_0^j(a) &=& \frac{1}{2\pi \iota} \oint_{\gamma} \frac{F_0^j(z)}{z - a} dz \label{eq:cif1} \\
-CIF_2: \hspace*{5mm}F_1^j(a) &=& \frac{1}{2\pi \iota} \oint_{\gamma} \frac{F_0^j(x)}{x - a} dx \label{eq:cif2}
-\end{eqnarray}
+The use of automation represents a significant opportunity to improve the food data classification process, through successive generations of computational methods, each building upon the limitations of its predecessor. Early classification systems relied on predefined rules and structured ontologies to encode domain knowledge explicitly, offering transparency and alignment with established taxonomies but struggling to scale to the heterogeneity and ambiguity of real-world food data. The advent of machine learning introduced data-driven approaches capable of generalising across diverse inputs, progressively improving classification accuracy while reducing dependence on hand-crafted rules \parencite{_17165083__simon_pearson_76a456af,van_meer__floor_f66672e5}. However, the inherent complexity of hierarchical taxonomies such as FoodEx2, encompassing base terms, facets, and multilingual descriptors organised across multiple levels of specificity, has exposed the limitations of both paradigms, motivating the development of more sophisticated architectures integrating deep learning, natural language processing, and retrieval-based mechanisms.
 
-Equação~\ref{eq:cif2} lorem ipsum dolor sit amet, consectetuer
-adipiscing elit. Suspendisse tincidunt viverra elit. Donec tempus
-vulputate mauris. Donec arcu. Vestibulum condimentum porta
-justo. Curabitur ornare tincidunt lacus. Curabitur ac massa vel ante
-tincidunt placerat. Cras vehicula semper elit. Curabitur gravida, est
-a elementum suscipit, est eros ullamcorper quam, sed cursus velit
-velit tempor neque. Duis tempor condimentum ante. Nam
-sollicitudin. Vestibulum adipiscing, orci eu tempor dapibus, risus
-sapien porta metus, et cursus leo metus eget nibh. 
+This section reviews the principal approaches that have been proposed and evaluated in the literature, from rule-based and ontology-driven systems (3.1.1) to machine learning and neural methods (3.1.2), critically examining their contributions and limitations in the context of FoodEx2 compliance.
 
-Pellentesque rutrum, sapien at viverra facilisis, metus eros blandit
-sem, quis dictum erat metus eget erat. Vivamus malesuada dapibus
-nulla. Maecenas nec purus. Suspendisse auctor mattis augue. Phasellus
-enim nisi, iaculis sit amet, pellentesque a, iaculis in, dui. Integer
-risus. 
+\hypertarget{rule-based-systems}{%
+\subsection{Rule-Based Systems}\label{rule-based-systems}}
 
-Curabitur ac massa vel ante tincidunt placerat. 
-Curabitur gravida, est cras vehicula semper elit
-a elementum suscipit, est eros ullamcorper quam, sed cursus velit
-velit tempor neque. Duis tempor condimentum ante. Nam
-sollicitudin. Vestibulum adipiscing, orci eu tempor dapibus, risus
-sapien porta metus, et cursus leo metus eget nibh.
+Before the proliferation of machine learning and deep learning approaches, rule-based systems were foundational in automating food data classification, relying on explicitly defined criteria and logical conditions to categorise food items \parencite{azanzi_jiomekong_ec1ddc5a}.
 
-\section{Section Example} \label{sec:se32}
+Ontology-based approaches represent an early form of this paradigm, encoding food knowledge through structured hierarchical vocabularies and logical relationships. FoodOn, for instance, leverages a comprehensive ontological framework to classify food products based on their source, processing, and composition, facilitating standardised data exchange and reasoning across diverse food-related datasets \parencite{gjorgjina_cenikj_0ae807f2,damion_dooley_8eedd589}.
 
-Curabitur ac massa vel ante tincidunt placerat \parencite{kn:ZPMD97}: 
+At the information extraction level, rule-based named-entity recognition methods were among the first to be applied to food-related text. Eftimov et al. (2017) developed a rule-based Named Entity Recognition system for food information extraction from unstructured scientific literature demonstrating the viability of pattern-matching and linguistic rules for identifying food entities and related attributes (Eftimov et al., 2017).
 
-\begin{itemize}
-\item \textbf{Components} --- Suspendisse auctor mattis augue \emph{push};
-\item \textbf{Praesent} --- Sit amet sem maecenas eleifend facilisis leo;
-\item \textbf{Pellentesque} --- Habitant morbi tristique senectus et netus.
-\end{itemize}
+A more applied instantiation of the rule-based paradigm is found in FoodWiki, an ontology-driven mobile system that uses semantic matching and SWRL inference rules to assess food product suitability based on consumer preferences and dietary restrictions \parencite{duygu__elik_ertu_rul_145c1b77}. While effective within its constrained domain, the system's reliance on a manually curated knowledge base limited its scalability and adaptability to new products or evolving food classifications.
 
-\subsection{Subsection Example --- Figures} \label{sec:se321}
+Despite their utilities, these rule-based systems offer high precision when rules are meticulously crafted for specific domains, they inherently struggle with the variability and ambiguity present in diverse food descriptions, making them difficult to scale and maintain \parencite{simon_mezgec_ec31e9e4}. The brittleness of rule-based systems became increasingly apparent, motivating a shift towards data-driven machine learning approaches capable of learning classification patterns directly from examples.
 
-Suspendisse elementum sodales felis Figure~\ref{fig:arch} on 
-page~\pageref{fig:arch} is a floating figure\footnote{\url{https://tex.stackexchange.com/questions/381426/advantage-of-floating-figures}}.
+\hypertarget{machine-learning-approaches}{%
+\subsection{Machine Learning Approaches}\label{machine-learning-approaches}}
 
-% DO NOT use [h] or [H] so figures may float to the right place
-\begin{figure}
-    \includegraphics[width=0.86\textwidth]{puzzle}
-    \caption{A figure, caption below}
-    \label{fig:arch}
-\end{figure}
+To increase the cognitive capacity of automatic food classification systems and overcome some limitations of rule-based systems, machine learning approaches have been increasingly employed, leveraging statistical models to identify complex patterns within large datasets for more flexible and scalable classification \parencite{n_n__misra_b6603190}.
 
-Loren ipsum dolor sit amet, consectetuer adipiscing elit. 
-Praesent sit amet sem. Maecenas eleifend facilisis leo. Vestibulum et
-mi. Aliquam posuere, ante non tristique consectetuer, dui elit
-scelerisque augue, eu vehicula nibh nisi ac est. Nullam laoreet fermentum 
-urna.
+Among the earliest semi-automated approaches specifically targeting FoodEx2 classification is StandFood, proposed by Eftimov et al. (2017), which combined a machine learning classifier for food category identification with a natural language processing module for FoodEx2 code assignment. Evaluated on datasets from three European countries, the system achieved an accuracy of 89\% for classification and 79\% for food description, establishing a foundational benchmark for subsequent work in the field. Despite its promising results, StandFood relied on shallow feature representations and predefined post-processing rules, limiting its capacity to generalise across the full depth and breadth of the FoodEx2 taxonomy.
 
-Duis eget diam. In est justo, tristique in, lacinia vel, feugiat eget,
-quam. Pellentesque habitant morbi tristique senectus et netus et
-malesuada fames ac turpis egestas. Fusce feugiat, elit ac placerat
-fermentum, augue nisl ultricies eros, id fringilla enim sapien eu
-felis. Vestibulum ante ipsum primis in faucibus orci luctus et
-ultrices posuere cubilia Curae; Sed dolor mi, porttitor quis,
-condimentum sed, luctus in. 
+Subsequent machine learning advancements, like the FoodEx2vec by Eftimov et al. (2020), brought significant advances, introducing the first vector representation of food concepts within the FoodEx2 hierarchy. By embedding food items in a continuous hyperbolic space using Poincaré embedding, FoodEx2vec enabled the capture of hierarchical semantic relationships between food concepts, improving the alignment of multi-hierarchical data compared to traditional Euclidean methods \parencite{lorenzo_molfetta_f41ce012}. This work marked a transition towards neural and distributional approaches, demonstrating that the structural properties of the FoodEx2 taxonomy could be explored to enhance classification and food data analysis tasks.
 
-\subsection{Subsection Example --- Tables} \label{sec:se322}
+The integration of deep learning and natural language processing into FoodEx2-compatible pipelines was further explored by \textcite{simon_mezgec_ec31e9e4}, who proposed a combined approach for food image recognition and standardisation, applying deep convolutional networks for visual classification and NLP-based matching for FoodEx2 code assignment. This work highlighted the potential of multimodal data fusion for comprehensive food item identification and classification within complex regulatory frameworks like FoodEx2.
 
-Suspendisse elementum sodales felis Table~\ref{tab:example} is a 
-floating table.
+The current state of the art in automated FoodEx2 classification is represented by FEAST \parencite{lorenzo_molfetta_47d7c4cd}, a retrieval-augmented multi-hierarchical food classification system specifically designed to address the challenges of complex label interdependencies, data sparsity, and extreme output dimensions inherent in the FoodEx2 system. The FEAST decomposes the classification task into three sequential stages: base term identification, multi-label facet prediction, and facet descriptor assignment, and employs a retriever-reranker architecture, achieving state-of-the-art accuracy by effectively navigating the multi-hierarchical structure of FoodEx2. Despite the noted limitations concerning data imbalance and coverage in the available datasets \parencite{lorenzo_molfetta_f41ce012}, FEAST's modular design offers both interpretability and scalability, allowing the retrieval index to be updated as new FoodEx2 codes emerge without requiring full model retraining.
 
-% DO NOT use [h] or [H] so tables may float to the right place
-\begin{table}
-  \caption{A table, caption on top}
-\begin{tabular}{|c|r@{.}lr@{.}lr@{.}l||r|}
-	\hline
-\multicolumn{8}{|c|}
-	{\rule[-3mm]{0mm}{8mm}Iteration $k$ de $f(x_n)$} \\
-\textbf{\em k}
-	& \multicolumn{2}{c}{$x_1^k$}
-	& \multicolumn{2}{c}{$x_2^k$}
-	& \multicolumn{2}{c||}{$x_3^k$}
-	& comments \\ \hline \hline
-0   & -0&3                 & 0&6                 &  0&7   & - \\
-1   &  0&47102965 & 0&04883157 & -0&53345964  & $\delta<\epsilon$ \\
-2   &  0&49988691 & 0&00228830 & -0&52246185  & $\delta < \varepsilon$ \\
-3   &  0&49999976 & 0&00005380 & -0&523656   &   $N$ \\
-4   &  0&5                 & 0&00000307 & -0&52359743  & \\
-\vdots	& \multicolumn{2}{c}{\vdots}
-	& \multicolumn{2}{c}{$\ddots$}
-	& \multicolumn{2}{c||}{\vdots}  & \\
-7   &  0&5   & 0&0    & \textbf{-0}&\textbf{52359878}
-		 & $\delta<10^{-8}$ \\ \hline
-\end{tabular}
-  \label{tab:example}
-\end{table}
+However, despite these advances, a significant gap persists across the machine learning approaches reviewed. Most systems address classification from textual food descriptions alone, without integrating the visual and multimodal information present on real-world product labels. Furthermore, the absence of a publicly standardised benchmark dataset for FoodEx2 coding limits systematic comparison across approaches. Finally, none of the reviewed systems addresses the full pipeline from raw product image to compliant FoodEx2 output within a secure, regulation-aware deployment environment, a gap that the IDRISK2 project directly seeks to address.
 
-Loren ipsum dolor sit amet, consectetuer adipiscing elit. 
-Praesent sit amet sem. Maecenas eleifend facilisis leo. Vestibulum et
-mi. Aliquam posuere, ante non tristique consectetuer, dui elit
-scelerisque augue, eu vehicula nibh nisi ac est. Suspendisse elementum
-sodales felis. Nullam laoreet fermentum urna. 
+\hypertarget{ai-applications-in-food-safety-and-traceability}{%
+\section{AI Applications in Food Safety and Traceability}\label{ai-applications-in-food-safety-and-traceability}}
 
-Duis eget diam. In est justo, tristique in, lacinia vel, feugiat eget,
-quam. Pellentesque habitant morbi tristique senectus et netus et
-malesuada fames ac turpis egestas. Fusce feugiat, elit ac placerat
-fermentum, augue nisl ultricies eros, id fringilla enim sapien eu
-felis. Vestibulum ante ipsum primis in faucibus orci luctus et
-ultrices posuere cubilia Curae; Sed dolor mi, porttitor quis,
-condimentum sed, luctus in. 
+Beyond classification, the use cases for artificial intelligence in food safety and traceability are expanding rapidly, encompassing diverse applications such as risk prediction, supply chain optimisation, and pathogen detection \parencite{chenhao_qian_8525e6ba}. The increasing digitisation of food supply chains and the growing availability of multimodal data, including product images, nutritional labels, and regulatory documents, have created new opportunities for AI-driven automation across the food safety pipeline. This section delves into two of the most directly relevant application domains: the use of OCR and computer vision for automated information extraction from food product labels (3.2.1), and the application of large language models for semantic interpretation and compliance verification of food-related information (3.2.2).
 
-\subsection{Subsection Example --- SI} \label{sec:si}
- 
-Always use the \texttt{siunitx} package to write values, units, etc.\ 
-according to the International System of Units convention rules and style conventions (see \url{https://physics.nist.gov/cuu/Units/checklist.html}).
+\hypertarget{ocr-and-computer-vision-in-food-industry}{%
+\subsection{OCR and Computer Vision in Food Industry}\label{ocr-and-computer-vision-in-food-industry}}
 
-For example:
-\SI{50}{\kilo\gram}, 
-\SI{15}{\celsius}, 
-\SI{20,01}{\meter\per\second}, 
-\SI{120}{\kilo\byte\per\second}, 
-\SI{34}{\percent}, 
-\SI{289300.00}{\eurocurrency}, 
-%\SI{28.3}{\mega\eurocurrency}, 
-\num{10245.450234}.
+Optical Character Recognition and computer vision technologies are pivotal for automating the extraction and interpretation of textual and visual data from food product labels, packaging, and other physical documents within the food industry. This capability is crucial for enhancing food safety protocols and ensuring compliance with regulatory standards by enabling automated data capture from diverse sources \parencite{marina_arribas_lopez_6d42e82a}.
 
-Table~\ref{tab:feup} % (excerto adaptado de ``A FEUP em números'', 2011)
-serves to exemplify the alignment in the columns with numbers, and has nothing to do with any numerical data associated with \acs*{FEUP}'s resources and investments in 2025.
+The automated extraction of information from food product labels represents one of the most practically significant applications of OCR and computer vision in the food industry. Product labels constitute the primary source of regulatory and nutritional information for both consumers and authorities, but their heterogeneity, encompassing varied fonts, multilingual text, dense layouts, and packaging materials that introduce glare and surface distortion, poses significant challenges for automated recognition systems \parencite{v_nia_guimar_es_e2e932db}.
 
-\begin{table}
-  \centering
-  \caption[Physical Resources of \acs*{FEUP}]{Physical Resources of \acs*{FEUP}~\parencite{kn:feup}.}
-  \begin{tabular}{@{}S@{}}
-    \toprule
-    {Some Values} \\
-    \midrule
-    2.3456 \\
-    34.2345 \\
-    -6.7835 \\
-    90.473 \\
-    5642.5 \\
-    1.2e3 \\
-    e4 \\
-    \bottomrule
-  \end{tabular}
-  \label{tab:feup}
-\end{table}
+Early approaches to label recognition relied on simple image processing techniques combined with traditional OCR engines such as Tesseract. Despite its widespread adoption, this technique struggles with the visual complexity characteristic of real-world food packaging. A comparative evaluation of four open-source OCR systems (Tesseract, EasyOCR, PaddleOCR, and TrOCR) on real-world food packaging images demonstrated significant performance variation across engines, without any system consistently outperforming others across all label types, highlighting the need for more robust, specialised solutions \parencite{mayimunah_nagayi_62f20413}. Hence, these findings underscore the importance of preprocessing pipelines tailored to the specific characteristics of food packaging, including binarisation, noise reduction, and perspective correction, to achieve optimal performance in automated information extraction from diverse food labels \parencite{mayimunah_nagayi_62f20413}.
 
-% \begin{table}
-%   \centering
-% \caption[Physical Resources of \acs*{FEUP}]{Physical Resources of \acs*{FEUP}~\parencite{kn:feup}.}
-% \begin{tabular}{| l | S[table-number-alignment = right] |}
-%   \hline
-%   \textbf{Description} & \textbf{Quantity} \\ \hline
-%   \hline
-%   Total area of the FEUP campus & \SI{93918}{\square\meter} \\ \hline
-%   Green spaces & \SI{23}{\kilo\square\meter} \\ \hline
-%   Number of computers dedicated to teaching & \num{1815} \\ \hline
-%   Investment in laboratory equipment & \SI{1.46}{\mega\eurocurrency} \\ \hline
-%   Investment in Sustainability & \SI{31.4}{\kilo\eurocurrency} \\
-%   \hline
-% \end{tabular}
-%   \label{tab:feup}
-% \end{table}
+More recent work has focused on the integration of vision-language models into OCR for food label recognition. Le et al. (2025) proposed a framework combining advanced image enhancement with VLM-based OCR for coffee bean package label recognition, demonstrating that structured use of vision-language models can substantially improve text recognition accuracy on challenging packaging materials. Similarly, other studies have leveraged combined OCR and large language models to extract and analyse ingredients from food labels, offering insights into complex nutritional terms and providing risk assessments to consumers \parencite{sagar_janokar_7f0484cc}. This approach reflects a trend towards replacing traditional OCR engines with end-to-end vision-language pipelines capable of jointly performing text detection, recognition, and semantic interpretation in a single inference call.
 
-Loren ipsum dolor sit amet, consectetuer adipiscing elit. 
-Praesent sit amet sem. Maecenas eleifend facilisis leo. Vestibulum et
-mi. Aliquam posuere, ante non tristique consectetuer, dui elit
-scelerisque augue, eu vehicula nibh nisi ac est. Suspendisse elementum
-sodales felis. Nullam laoreet fermentum urna. 
+Despite these advances, key limitations persist. Most systems are evaluated on constrained datasets that do not reflect the full diversity of commercial food products, and performance degrades significantly on low-resolution or occluded label images. Furthermore, OCR systems operating in isolation produce raw textual outputs that require subsequent semantic processing to be mapped to structured representations such as FoodEx2 codes, a gap that motivates the integration with large language models discussed in the following section.
 
-Duis eget diam. In est justo, tristique in, lacinia vel, feugiat eget,
-quam. Pellentesque habitant morbi tristique senectus et netus et
-malesuada fames ac turpis egestas. Fusce feugiat, elit ac placerat
-fermentum, augue nisl ultricies eros, id fringilla enim sapien eu
-felis. Vestibulum ante ipsum primis in faucibus orci luctus et
-ultrices posuere cubilia Curae; Sed dolor mi, porttitor quis,
-condimentum sed, luctus in\footnote{The \texttt{siunitx} package Manual is available at \url{https://ctan.org/pkg/siunitx}.}.
+\hypertarget{llms-for-food-information-extraction}{%
+\subsection{LLMs for Food Information Extraction}\label{llms-for-food-information-extraction}}
 
-\subsection{Subsection Example --- Acronyms} \label{sec:acronym}
+In addition to extracting data from food images, the semantic interpretation of food-related information, including ingredient lists, nutritional data, and regulatory claims, represents a natural application domain for large language models, given their capacity for contextual understanding and flexible information extraction from heterogeneous textual sources. In contrast to rule-based and classical NLP approaches, LLMs do not require predefined extraction templates, enabling generalisation across diverse label formats and regulatory contexts \parencite{neris__zen_95877972}.
 
-This section shows how to use the acronyms \ac{AI} and \ac{ML}.  
-Later we can simply refer to \ac{AI} or \ac{ML} without expansion.
+In the context of food safety compliance, \textcite{shabnam_hassani_c7097c31} demonstrated the applicability of LLMs (BERT and GPT-based models) to the automated classification of legal provisions and compliance verification in the food safety domain, including under GDPR constraints \parencite{shabnam_hassani_c7097c31}. The study concluded that LLMs are capable of reducing manual workload in regulatory analysis, though performance was sensitive to the specificity of the legal domain and the quality of prompting strategies \parencite{shabnam_hassani_c7097c31}.
 
-In modern technology, \ac{NLP} plays a crucial role in virtual assistants 
-and chatbots.  
-We also rely on \ac{GPU} hardware for deep learning models.
+Within the product label level, \textcite{fatmah_yousef_assiri_d1ac72fc} proposed a pipeline combining OCR with LLMs for the extraction of nutritional information from bilingual food labels, demonstrating that LLMs can effectively resolve the ambiguities and mismatch that commonly degrade the quality of raw OCR outputs \parencite{fatmah_yousef_assiri_d1ac72fc}. This work highlights the complementary relationship between OCR and LLMs in food label processing: the OCR provides the textual content while the LLMs provide the semantic layer required for structured information extraction \parencite{fatmah_yousef_assiri_d1ac72fc}.
 
-\subsubsection{Special use in titles as \acs*{FEUP}}
+Beyond individual labels, LLMs have also been evaluated for large-scale extraction of product information from online retail sources. A recent evaluation of LLM-based strategies for food product information extraction from German online shops demonstrated promising results for structured data extraction, with retrieval-augmented approaches outperforming standard prompting on tasks requiring precise attribute identification \parencite{brosch__christoph_34010501}. In the broader food safety domain, the integration of LLMs with knowledge graphs has emerged as a complementary paradigm, enabling the combination of structured domain knowledge with the flexible reasoning capabilities of generative models for risk prediction and traceability applications \parencite{mohbat_tharani_f8ffae09}.
 
-Acronyms can also be made plural: \acp{GPU} are widely used in 
-high-performance computing.  
-Possessive forms are supported too: \ac{AI}'s impact on society is 
-profound at \ac{FEUP}.
+However, LLMs applied to food information extraction are not without limitations. Their outputs remain susceptible to hallucinations in data-sparse or taxonomically complex scenarios, and their tendency to generate hallucinations is particularly problematic in regulatory contexts where precision is essential. These limitations reinforce the case for retrieval-augmented approaches that ground LLM outputs in verified knowledge bases, a direction examined in detail in Section 3.3.2.
 
-\section{Summary}
+\hypertarget{advancements-in-multimodal-ai-for-document-processing}{%
+\section{Advancements in Multimodal AI for Document Processing}\label{advancements-in-multimodal-ai-for-document-processing}}
 
-Pellentesque habitant morbi tristique senectus et netus et
-malesuada fames ac turpis egestas. Fusce feugiat, elit ac placerat
-fermentum, augue nisl ultricies eros, id fringilla enim sapien eu
-felis. Vestibulum ante ipsum primis in faucibus orci luctus et
-ultrices posuere cubilia Curae; Sed dolor mi, porttitor quis,
-condimentum sed, luctus in. 
+Given the inherent multimodal nature of food packaging (combining textual elements with visual cues like logos, brand imagery, and product photography), advancements in multimodal AI are particularly relevant for achieving robust and comprehensive information extraction \parencite{qingfeng_tian_6cb227c3,cheng_dong_zhang_6ced93cf}.
 
+Therefore, this subchapter will explore the latest research in multimodal AI, specifically focusing on how the synergistic integration of visual and linguistic modalities can enhance the accuracy and completeness of data extraction from complex food-related documents. This section examines the state of the art in text-image fusion for document understanding (3.3.1) and the application of retrieval-augmented generation to domain-specific and regulatory contexts (3.3.2).
 
-%%%% Another chapter to force two pages in the index
-%%%%
-\chapter{Another chapter}
+\hypertarget{state-of-the-art-in-text-image-fusion}{%
+\subsection{State-of-the-Art in Text-Image Fusion}\label{state-of-the-art-in-text-image-fusion}}
 
-Integer nec quam. Sed fermentum. Nunc vitae leo. Etiam sit amet
-quam. Nunc vestibulum massa in mauris. Duis eget nulla. 
+The integration of textual and visual modalities for document understanding has evolved significantly over the past decade, progressing from shallow feature junction to deeply coupled architectures capable of cross-modal reasoning and semantic interpretation \parencite{shuaishuai_gao_50521934}. Early approaches often relied on concatenating features extracted independently from text (e.g., OCR output) and images (e.g., visual embeddings), subsequently feeding these combined representations into machine learning models for classification or extraction tasks. More recent advancements, however, emphasise unified multimodal representation frameworks that seamlessly integrate diverse data types to mitigate the limitations of isolated processing \parencite{lang_mei_8bcb958f}.
 
-\section{Section Example}
+A foundational step towards deeper integration was the development of multimodal deep networks that jointly process document images and their OCR-extracted textual content through shared architectures. This approach showed that combining visual and textual features in a unified model consistently outperforms unimodal baselines on document classification benchmarks (...). Consequently, subsequent work extended this paradigm through attention-based fusion mechanisms, enabling models to dynamically weight the contribution of each modality based on the relevance of visual regions to the linguistic query, a property particularly valuable for structured documents where spatial organisation carries semantic meaning \parencite{paul_pu_liang_8415d006}.
 
-Fusce ultricies arcu eu nibh volutpat feugiat. Maecenas urna pede, 
-commodo quis, porta eu, bibendum elementum, pede. 
+The emergence of large-scale pre-trained vision-language models has further transformed the field. Contemporary architectures such as CLIP, LLaVA, and Qwen-VL leverage cross-modal attention and contrastive pre-training on massive image-text datasets to acquire generalisable multimodal representations that can be fine-tuned for downstream document understanding tasks \parencite{paul_pu_liang_8415d006}. A recent taxonomy of multimodal fusion approaches proposed by Li et al. categorises these methods based on their fusion strategy, ranging from early fusion where raw data is combined, to late fusion where decisions from unimodal models are merged, and hybrid approaches \parencite{abhinav_ramesh_kashyap_da0a8b8d}. More specifically, late fusion permits the use of specialised, established architectures for each modality, independently processing information until the final merging of predictions \parencite{thibault_douzon_fb62b0d4}.
 
-\section{Section Example}
+Despite these advances, key challenges persist in the application of text-image fusion to regulatory document processing. Domain shift between general pre-training data and specialised regulatory documents remains a significant source of performance degradation, and the fine-grained classification requirements of structured taxonomies such as FoodEx2 demand precision levels that generalist multimodal models do not consistently achieve. These limitations motivate the integration of retrieval-augmented mechanisms, examined in the following section, as a complementary strategy to ground multimodal outputs in verified domain-specific knowledge.
 
-Sed eros massa, molestie eget, mattis non, rutrum ac, magna. 
-Duis dui. Maecenas eget tortor ut dolor semper mattis. 
-Maecenas auctor, tellus et ultricies tempor, elit
-est placerat lacus, in posuere mauris lorem et arcu. 
+\hypertarget{rag-based-solutions-in-scientific-domains}{%
+\subsection{RAG-based Solutions in Scientific Domains}\label{rag-based-solutions-in-scientific-domains}}
 
-\subsection{Subsection Example}
+The application of retrieval-augmented generation to regulatory domains has received considerable momentum as a strategy for addressing the limitations of language models alone, particularly concerning factual accuracy and domain specificity \parencite{monica_riedler_e70c1434}. By grounding model outputs in authoritative external documents retrieved at inference time, RAG systems offer a principled approach to combining the generative flexibility of large language models with the factual reliability of curated knowledge base \parencite{tuba_gokhan_1d9980e9}. This hybrid architecture directly mitigates issues such as hallucination and outdated information, which are critical considerations for compliance in frequently updated regulatory landscapes.
 
-Nulla nec eros et pede vehicula aliquam. Aenean sodales pede vel
-ante. Fusce sollicitudin sodales lacus. Maecenas justo mauris,
-adipiscing vitae, ornare quis, convallis nec, eros. 
+In the pharmaceutical and clinical domain, Waikar et al. (2026) evaluated RAG-based systems for reviewing the regulatory compliance of drug information and clinical trial protocols, demonstrating that integrated RAG/LLM pipelines substantially outperform standalone models on compliance verification tasks. This study highlighted the importance of retrieval precision, ensuring that the passages surfaced by the retriever are not merely topically related but specifically relevant to the regulatory requirement being evaluated, a challenge directly applicable to the FoodEx2 classification context, where nuances in product descriptions can significantly alter classification outcomes \parencite{hocine_kadi_3530c912,milad_moradi_83875958}.
 
-\subsection{Subsection Example}
+Similar findings have been reported in the domain of technical regulatory interpretation. A RAG pipeline specifically designed for question answering over radio regulatory documents demonstrated that domain-specialised retrieval, grounded in authoritative regulatory corpora, significantly reduces hallucinations and improves response reliability compared to general-purpose LLMs operating without retrieval augmentation \parencite{kassimi__zakaria_el_f3c1dbe2}. The dense domain-specific vocabulary characteristic of regulatory documents, such as the structure of the FoodEx2 technical guidelines, was identified as a key factor motivating the RAG approach.
 
-Pellentesque pulvinar fringilla dolor. In sit amet pede. 
-Proin orci justo, semper vel, vulputate quis, convallis
-ac, nulla. Nulla at justo. Mauris feugiat dolor. 
-Etiam posuere fermentum eros. Morbi nisl ipsum, tempus id, 
-ornare quis, mattis id, dolor. Aenean molestie metus 
-suscipit dolor. Aliquam id lectus sed
-nisl lobortis rhoncus. Curabitur vitae diam sed sem aliquet
-tempus. Sed scelerisque nisi nec sem.
+Within the food classification domain specifically, the FEAST system \parencite{lorenzo_molfetta_47d7c4cd} reviewed in Section 3.1.2, represents the most advanced application of retrieval-augmented architectures to FoodEx2 coding to date. Its modular design combining dense retrieval, cross-encoder reranking, and hierarchical classification, demonstrates the viability of RAG-based approaches for structured food taxonomy assignment and establishes a direct point of comparison for the pipeline proposed in this dissertation.
 
-\section{Section Example}
+Therefore, it can be concluded that RAG-based architectures are suitable for regulatory compliance tasks characterised by structured knowledge bases, precise classification requirements, and the need for auditable and traceable outputs. However, existing implementations have largely operated only with textual inputs, without integrating the visual and multimodal information present in the labels of actual products, a gap that the IDRISK2 system directly addresses.
 
-Sed eros massa, molestie eget, mattis non, rutrum ac, magna. 
-Duis dui. Maecenas eget tortor ut dolor semper mattis. 
-Maecenas auctor, tellus et ultricies tempor, elit
-est placerat lacus, in posuere mauris lorem et arcu. 
+\hypertarget{security-and-compliance-in-ai-systems}{%
+\section{Security and Compliance in AI Systems}\label{security-and-compliance-in-ai-systems}}
 
-\subsection{Subsection Example}
+The deployment of AI systems in regulatory environments introduces a distinct set of security and compliance obligations that extend beyond technical performance considerations. As AI-driven pipelines increasingly inform decisions with regulatory or safety implications, ensuring that these systems operate within established legal frameworks has become a critical imperative. This section examines the compliance landscape defined by the GDPR and the EU AI Act (3.4.1), followed by a review of privacy-preserving AI techniques that operationalise these requirements at the architectural level (3.4.2).
 
-Nulla nec eros et pede vehicula aliquam. Aenean sodales pede vel
-ante. Fusce sollicitudin sodales lacus. Maecenas justo mauris,
-adipiscing vitae, ornare quis, convallis nec, eros. 
+\hypertarget{gdpr-compliance-in-ai}{%
+\subsection{GDPR Compliance in AI}\label{gdpr-compliance-in-ai}}
 
-\subsection{Subsection Example}
+The General Data Protection Regulation remains the primary legislative framework governing data processing activities within the European Union, and its provisions carry direct implications for AI systems that operate on or produce data pertaining to individuals or regulated entities. While the GDPR was not designed specifically for AI, its core principles have proven broadly applicable to AI system design, and their interpretation in the context of automated decision-making has been progressively clarified through regulatory guidance and judicial decisions \parencite{susan_von_struensee_ed47b0f9}.
 
-\textcite{khakipoor_linear_2023,liu_energy_2023} aliquam id lectus sed nisl lobortis rhoncus. 
-Curabitur vitae diam sed sem aliquet tempus. Sed scelerisque 
-nisi nec sem.
+Within the GDPR, Article 22 is particularly relevant for classification systems, as it restricts fully automated decision-making that produces significant legal or similar effects on individuals, establishing the right to human intervention and adequate explanation of automated results \parencite{andrew_d__selbst_b94e5789}. Although food product classification systems such as the IDRISK2 pipeline do not directly process personal data, the transparency and explainability obligations embedded in Article 22 establish a broader standard of accountability that applies to any AI system operating in a regulated context, reinforcing the importance of interpretable and auditable classification outputs.
 
-\section{Section Example}
+The introduction of the EU AI Act (Regulation (EU) 2024/1689) has further expanded the compliance landscape for AI systems deployed within the EU. The Act establishes a risk-based regulatory framework that classifies AI systems according to their potential for harm, imposing stricter obligations on high-risk applications, including those used in regulatory compliance, critical infrastructure, and safety assessment contexts \parencite{enas_mohammed_alqodsi_071d9976}. Systems falling within the high-risk category are subject to requirements including mandatory risk management systems, technical documentation, human oversight mechanisms, and post-market monitoring, obligations that must be integrated into system design from the outset rather than retrofitted after deployment. The convergence of GDPR and AI Act requirements creates a layered compliance framework that AI developers in the food safety domain must navigate carefully, as non-compliance carries both legal and reputational risks.
 
-Maecenas urna pede, commodo quis, porta eu, bibendum elementum, 
-pede. Sed eros massa, molestie eget, mattis non, rutrum ac, 
-magna. Duis dui. Maecenas eget tortor ut dolor semper mattis. 
-Maecenas auctor, tellus et ultricies tempor, elit est placerat 
-lacus, in posuere mauris lorem et arcu~\parencite{monopoli_exploiting_2023,zhang_carma_2023,chang_adas_2023, guo_rapidstream_2023}. 
+\hypertarget{privacy-preserving-ai-techniques}{%
+\subsection{Privacy-Preserving AI Techniques}\label{privacy-preserving-ai-techniques}}
 
-\subsection{Subsection Example}
+Beyond legislative compliance, there is a growing focus on developing technical mechanisms that operationalise privacy protection at the architectural level of AI systems. Three principal paradigms have emerged as the dominant approaches: differential privacy, federated learning, and trusted execution environments, each addressing different threat models and privacy-utility trade-offs \parencite{zuzanna_fendor_276ddcba}.
 
-Nulla nec eros et pede vehicula aliquam. Aenean sodales pede vel
-ante. Fusce sollicitudin sodales lacus. Maecenas justo mauris,
-adipiscing vitae, ornare quis, convallis nec, eros. 
+Differential privacy provides formal mathematical guarantees of privacy by introducing calibrated noise into model training or inference processes, ensuring that the contribution of any individual data point cannot be reliably inferred from the model's outputs. This technique is particularly relevant for AI systems trained on sensitive datasets, as it bounds the information leakage attributable to any single training example while preserving aggregate statistical utility \parencite{reihaneh_torkzadehmahani_ed6428e5}. However, the noise injection required to achieve strong privacy guarantees can degrade model performance, particularly for fine-grained classification tasks, necessitating careful optimisation between privacy budget allocation and model utility for real-world deployment \parencite{ramit_sehgal_7100e259}.
 
-\subsection{Subsection Example}
+Federated learning addresses privacy at the data collection level by enabling collaborative model training across distributed data sources without requiring raw data to be centralised. Each participating node trains a local model on its own data and shares only model updates, gradients or weights, with a central aggregator, thereby keeping sensitive data localised and reducing exposure to centralised data breaches \parencite{kilian_sprenkamp_729804de}. This paradigm is particularly attractive for regulatory AI applications involving multiple independent authorities or organisations, as it enables the development of shared models without requiring cross-institutional data sharing, a common constraint in food safety regulatory environments where data governance policies restrict data transfer.
 
-\textcite{khakipoor_linear_2023,liu_energy_2023} aliquam id lectus sed nisl lobortis rhoncus. 
-Curabitur vitae diam sed sem aliquet tempus. Sed scelerisque 
-nisi nec sem scelerisque.
+Trusted execution environments provide hardware-level isolation for sensitive computation, ensuring that model inference and data processing occur within secure enclaves that are protected from the host operating system and external software. This approach is complementary to differential privacy and federated learning, providing an additional layer of protection against infrastructure-level threats such as memory inspection or malicious system administrators \parencite{haochen_liu_f33409d1}. The combination of these techniques is gaining traction as a standard approach for AI deployments in regulated, high-stakes domains where multiple threat vectors must be addressed simultaneously.
 
-Nulla nec eros et pede vehicula aliquam. Aenean sodales pede vel
-ante. Fusce sollicitudin sodales lacus. Maecenas justo mauris,
-adipiscing vitae, ornare quis, convallis nec, eros. Etiam laoreet
-venenatis ipsum. In tellus odio, eleifend ac, ultrices vel, lobortis
-sed, nibh. Fusce nunc augue, dictum non, pulvinar sed, consectetuer
-eu, ipsum. Vivamus nec pede.  
+In the context of the IDRISK2 system, the relevance of these techniques is primarily architectural. The system's design prioritises a closed, self-hosted deployment environment that avoids reliance on public cloud infrastructure or external unverified APIs, thereby minimising data exposure risks at the infrastructure level. This design choice aligns with the principle of privacy by design mandated by the GDPR and provides a foundation for future integration of more advanced privacy-preserving techniques, should the scope expand to include distributed data sources or highly sensitive individual-level food consumption data.
+
+\hypertarget{gaps-in-current-research-and-technology}{%
+\section{Gaps in Current Research and Technology}\label{gaps-in-current-research-and-technology}}
+
+Despite significant advancements in AI for food safety and compliance review, a set of persistent gaps remains. While significant progress has been made in individual components of automated food classification pipelines, no existing system has yet integrated these components into a unified, regulation-aware, multimodal architecture capable of end-to-end FoodEx2 compliance assessment from real-world product data.
+
+\hypertarget{gap-1-no-end-to-end-pipeline-from-real-world-label-images-to-foodex2-output}{%
+\subsubsection{Gap 1, No end-to-end pipeline from real-world label images to FoodEx2 output}\label{gap-1-no-end-to-end-pipeline-from-real-world-label-images-to-foodex2-output}}
+
+The most significant gap in the current literature is the absence of a system capable of processing raw food product label images, as captured in real inspection conditions, and producing compliant FoodEx2 codes as output. FEAST \parencite{lorenzo_molfetta_47d7c4cd}, the most advanced existing approach, operates exclusively on pre-structured textual food descriptions and does not address the upstream challenge of extracting and interpreting the heterogeneous visual and textual content present on real packaging.
+
+\hypertarget{gap-2-absence-of-vlm-evaluation-for-foodex2-classification}{%
+\subsubsection{Gap 2, Absence of VLM evaluation for FoodEx2 classification}\label{gap-2-absence-of-vlm-evaluation-for-foodex2-classification}}
+
+No existing work has systematically evaluated the applicability of Vision-Language Models to FoodEx2 classification from product label imagery. The growing capabilities of models such as GPT-4o, Claude, LLaVA, and Qwen-VL in document understanding and structured information extraction suggest significant potential for this task, yet no benchmark or comparative study exists.
+
+\hypertarget{gap-3-regulatory-compliance-and-security-not-addressed-in-food-classification-ai}{%
+\subsubsection{Gap 3, Regulatory compliance and security not addressed in food classification AI}\label{gap-3-regulatory-compliance-and-security-not-addressed-in-food-classification-ai}}
+
+The reviewed literature on automated food classification devotes minimal attention to the regulatory and security dimensions of deployment in official food safety contexts. The specific implications of the GDPR and the EU AI Act for AI systems used in regulatory food safety workflows have not been systematically addressed in any existing food classification system.
+
+\hypertarget{gap-4-absence-of-closed-self-hosted-deployment-architectures}{%
+\subsubsection{Gap 4, Absence of closed, self-hosted deployment architectures}\label{gap-4-absence-of-closed-self-hosted-deployment-architectures}}
+
+Existing AI-driven food classification systems predominantly rely on cloud-based infrastructure or external API services, introducing data governance risks incompatible with the strict requirements of official regulatory bodies such as ASAE, SIT, and FVST. The development of self-hosted, closed deployment architectures for food safety AI remains an underexplored area that the IDRISK2 project directly addresses.
