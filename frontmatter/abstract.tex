@@ -1,16 +1,22 @@
-%% abstract.tex: Resumo (PT) + Abstract (EN) -- FEUP regulations
-%% -----------------------------------------------------------
+%% abstract.tex: Resumo (PT) e Abstract (EN)  [FEUP]
+%%
 \chapter*{Resumo}
 
-\textcolor{red}{\textbf{TODO:}} Escrever o resumo em portugu\^{e}s (250--350 palavras), tradu\c{c}\~{a}o do \emph{Abstract}. T\'{o}picos a cobrir: problema (classifica\c{c}\~{a}o manual FoodEx2 \'{e} morosa e exige peritos); abordagem IDRISK2 (\emph{pipeline} multimodal OCR $\rightarrow$ VLM $\rightarrow$ RAG sobre imagens reais de r\'{o}tulos); avalia\c{c}\~{a}o (conjunto de 34 imagens, compara\c{c}\~{a}o entre VLMs, calibra\c{c}\~{a}o); contribui\c{c}\~{o}es; principal resultado quantitativo e sua implica\c{c}\~{a}o.
+O sistema FoodEx2 da Autoridade Europeia para a Segurança dos Alimentos (EFSA) é o referencial padronizado para descrever produtos alimentares na monitorização da segurança alimentar europeia, mas a atribuição de códigos FoodEx2 continua a ser uma tarefa manual e fortemente dependente de peritos, o que limita a capacidade de resposta das autoridades reguladoras. Esta dissertação apresenta o IDRISK2, um pipeline multimodal de ponta a ponta que classifica produtos alimentares em códigos FoodEx2 diretamente a partir de imagens reais de rótulos, combinando reconhecimento ótico de caracteres (OCR), um modelo visão-linguagem (VLM) e um componente de Geração Aumentada por Recuperação (RAG) avançada construído sobre a documentação oficial do FoodEx2.
+
+O pipeline foi avaliado num conjunto de imagens de pratos portugueses e brasileiros e de produtos embalados, comparando três VLM intermutáveis (GPT-4o, Claude Sonnet 4.6 e LLaVA-NeXT-Mistral-7B) sob as mesmas etapas de OCR, recuperação e geração. O sistema completo atingiu 29,4\% de correspondência exata e 58,8\% ao nível da família com o GPT-4o, tendo uma ablação confirmado que a camada de RAG avançada, e não o VLM isolado, produz praticamente todo o sinal de classificação útil. Os VLM proprietários tiveram desempenho semelhante e superaram claramente o modelo de código aberto. Uma análise de calibração revelou ainda que as saídas de elevada confiança estavam frequentemente incorretas e que o mecanismo automático de revisão humana detetou apenas uma pequena fração dos erros, indicando que a calibração da confiança é o principal obstáculo a uma implementação segura.
+
+As principais contribuições são: um pipeline completo de imagem para FoodEx2 sobre rótulos reais; a primeira comparação empírica de VLM para classificação FoodEx2; um desenho de implementação fechado e atento à regulação; e uma caracterização honesta da lacuna de calibração que o trabalho futuro deverá colmatar.
 
 \vspace{\fill}
 \begin{flushleft}
 {\Large \textbf{Palavras-chave}:}
 FoodEx2 \(\bullet\)
-Modelos Vis\~{a}o-Linguagem \(\bullet\)
-Gera\c{c}\~{a}o Aumentada por Recupera\c{c}\~{a}o \(\bullet\)
-Seguran\c{c}a Alimentar
+Modelos Visão-Linguagem \(\bullet\)
+Geração Aumentada por Recuperação \(\bullet\)
+OCR \(\bullet\)
+Segurança Alimentar \(\bullet\)
+Calibração de Confiança
 \end{flushleft}
 \vspace*{24mm}
 
@@ -18,7 +24,11 @@ Seguran\c{c}a Alimentar
 
 \chapter*{Abstract}
 
-\textcolor{red}{\textbf{TODO:}} Write the English abstract (250--350 words) once final results are consolidated. Points to cover: problem and motivation (manual FoodEx2 classification is a slow, expertise-heavy bottleneck); approach (IDRISK2, an end-to-end multimodal pipeline OCR $\rightarrow$ Vision-Language Model $\rightarrow$ Advanced RAG operating on real product-label images); evaluation (34-image benchmark; cross-VLM comparison of GPT-4o, Claude Sonnet 4.6 and LLaVA-NeXT; confidence calibration and facet-level analysis); contributions (full image-to-FoodEx2 pipeline, empirical VLM evaluation for FoodEx2, GDPR-compliant closed deployment); headline quantitative finding and its practical implication.
+The European Food Safety Authority's FoodEx2 system is the standardised framework for describing food products in European food-safety monitoring, yet assigning FoodEx2 codes remains a manual, expertise-intensive task that limits the throughput of regulatory authorities. This dissertation presents IDRISK2, an end-to-end multimodal pipeline that classifies food products into FoodEx2 codes directly from real product-label images and combines optical character recognition (OCR), a vision-language model (VLM), and an Advanced Retrieval-Augmented Generation (RAG) component built over the official FoodEx2 documentation.
+
+The pipeline was evaluated on an image dataset of Portuguese and Brazilian dishes and packaged products, comparing three interchangeable VLM backends (GPT-4o, Claude Sonnet 4.6, and LLaVA-NeXT-Mistral-7B) under identical OCR, retrieval, and generation stages. The full system reached 29.4\% exact-match and 58.8\% family-level accuracy with GPT-4o, with an ablation confirming that the Advanced RAG layer, rather than the VLM alone, produces essentially all of the usable classification signal. The proprietary VLMs performed comparably and clearly outperformed the open-source model. A calibration analysis further revealed that high-confidence outputs were frequently incorrect and that the automatic human-review trigger surfaced only a small fraction of errors, indicating that confidence calibration is the key obstacle to safe deployment.
+
+The main contributions are: a complete image-to-FoodEx2 pipeline operating on real labels; the first empirical comparison of VLMs for FoodEx2 classification; a closed, regulation-aware deployment design; and an honest characterisation of the calibration gap that future work must close.
 
 \vspace{\fill}
 \begin{flushleft}
@@ -26,7 +36,9 @@ Seguran\c{c}a Alimentar
 FoodEx2 \(\bullet\)
 Vision-Language Models \(\bullet\)
 Retrieval-Augmented Generation \(\bullet\)
-Food Safety
+OCR \(\bullet\)
+Food Safety \(\bullet\)
+Confidence Calibration
 \end{flushleft}
 \vspace*{24mm}
 

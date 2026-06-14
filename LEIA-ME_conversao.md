@@ -30,16 +30,18 @@ A dissertação foi convertida do manuscrito Word para este projeto LaTeX **feup
 
 ## TODO antes da entrega
 
-- [ ] **Abstract** (EN) e **Resumo** (PT) — `frontmatter/abstract.tex`.
-- [ ] **Agradecimentos** — `frontmatter/acknows.tex`.
-- [ ] **Referências (quase feito)** — bibliografia preenchida e 92 citações já ligadas.
-      Ambiguidades resolvidas: Zhu 2024 → Zhu \& Chen; Zhang 2024 → Multimodal LLMs;
-      "Eftimov 2017" era Mezgec \& Eftimov (ano corrigido p/ 2018).
-      Faltam ~6 citações sem entrada no `.bib` (adicionar a referência ou corrigir autor/ano):
-      **EFSA 2019, Eftimov 2020, Le 2025, Liu 2024, Sadeghi-Tehran 2019, Waikar 2026**.
-      Confirmar ainda a inconsistência Molfetta et al. 2025/2026.
+- [x] **Abstract** (EN) e **Resumo** (PT) escritos em `frontmatter/abstract.tex` (aprovados; sem travessões).
+- [ ] **Agradecimentos**: `frontmatter/acknows.tex` (ainda stub TODO).
+- [x] **Referências** — bibliografia preenchida e ~96 citações ligadas; 0 citações indefinidas.
+      Resolvidas as ambíguas (Zhu→Zhu \& Chen; Zhang→Multimodal LLMs; "Eftimov 2017"→Mezgec et al. 2018)
+      e as 6 lacunas: Sadeghi-Tehran 2019 e EFSA 2015 (pág. 26) religadas; e adicionadas 4 referências novas
+      — FoodEx2vec (Eftimov et al. 2020), Le et al. 2025 (Sensors), LLaVA-NeXT (Liu et al. 2024),
+      Waikar et al. 2026. ("EFSA 2019" não era citação — é a série "EFSA Supporting Publications".)
+- [x] **FEAST (Molfetta et al.)** — unificado em **2025** (versão publicada, Frontiers in AI and
+      Applications / ECAI, DOI 10.3233/faia251309). Removida a entrada preprint 2026; todas as
+      citações apontam para a de 2025.
 - [ ] **Co-orientador** — nome em `main.tex` (`Second Supervisor`).
-- [ ] **Palavras-chave / Keywords** — confirmar em `abstract.tex`.
+- [ ] **Palavras-chave / Keywords**: confirmar/ajustar as sugeridas em `abstract.tex`.
 - [ ] Rever quebras de página de figuras/tabelas e legendas das tabelas.
 
 > `IDRISK2_preview_conteudo.pdf` é uma pré-visualização **do conteúdo** (classe genérica). A capa,
