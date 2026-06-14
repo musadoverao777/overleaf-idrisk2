@@ -1,7 +1,7 @@
 # IDRISK2 — conversão Word → LaTeX (feupteses)
 
 A dissertação foi convertida do manuscrito Word para este projeto LaTeX **feupteses**
-(template oficial FEUP/U.Porto), configurado para o curso **MIA**.
+(template oficial FEUP/U.Porto), configurado para o curso **M.EIC** (Mestrado em Engenharia Informática e Computação).
 
 ## O que foi feito
 
