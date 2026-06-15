@@ -85,6 +85,7 @@ The latency distribution is notably tight: the standard deviation of 1.5 seconds
 The calibration of the system's confidence signal with respect to actual correctness is, however, severely deficient. Among the 32 high-confidence outputs, 23 (71.9\%) were incorrect with respect to the ground truth annotation, the system reports high confidence on the great majority of its errors. Among the 2 medium-confidence outputs that triggered automatic human review, 1 was correct (guarana) and 1 was incorrect (mandioca), giving the human-review trigger a precision of 50\% on the 2 cases it captured but, more importantly, a recall of only 1/24 (4.2\%) on the 24 actual errors present in the dataset. In aggregate, 23 of the 24 errors (95.8\%) escaped the automatic review mechanism, a silent error rate that materially weakens the system's compliance with the human-oversight requirement of Article 14 of the EU AI Act for high-risk AI systems. The calibration failure and its impact on the human-review mechanism are visualised in Figure 5.1, and the implications of this calibration failure are developed in Section 6.4.
 
 \begin{longtable}[]{@{}lll@{}}
+\caption{End-to-end performance and calibration of the IDRISK2 system on the 34-image evaluation set (GPT-4o configuration).}\label{tab:eval-calibration}\\
 \toprule
 \endhead
 \textbf{Metric} & \textbf{Value} & \textbf{Notes / context}\tabularnewline
@@ -114,7 +115,6 @@ Non-empty OCR output rate & 23.5\% (8/34) & only packaged products yield tokens\
 \bottomrule
 \end{longtable}
 
-\emph{Table 5.1, End-to-end performance and calibration of the IDRISK2 system on the 34-image evaluation set (GPT-4o configuration).}
 
 \begin{figure}[htbp]
 \centering
@@ -148,6 +148,7 @@ Three further LLaVA-specific findings carry methodological weight for the thesis
 Together, the three-way comparison supports a refined version of the VLM-substitutability claim of Section 6.2. Substitutability holds robustly within the proprietary-VLM class for end-to-end accuracy, with secondary metrics that differ by single-digit percentage points. Substitutability does not hold between the proprietary-VLM class and the 7B open-source-VLM class evaluated here, where accuracy collapses by approximately one order of magnitude. The RAG layer continues to function under the open-source VLM, in the specific and weaker sense that it still overrides the VLM's preliminary code in 91.2\% of cases (the grounded-reasoning rate computed from the LLaVA run), but the corrections converge on a small set of dominant codes (A03VT in 19 of 34 cases) rather than on the dispersed correct codes that GPT-4o and Claude enable. The implication for deployment is that an open-source-only configuration is technically operable today, in the sense that it runs end-to-end and produces structured outputs with audit trails, but does not yet reach a useful accuracy threshold for regulatory-grade classification at this model scale. The position is recorded here as the empirical benchmark against which future open-source VLMs at larger parameter counts or with task-specific fine-tuning would need to be measured to demonstrate substantive convergence with the proprietary class.
 
 \begin{longtable}[]{@{}llll@{}}
+\caption{Cross-VLM comparison on the 34-image evaluation set across two proprietary VLMs (GPT-4o, Claude Sonnet 4.6) and the LLaVA-NeXT-Mistral-7B open-source baseline, with OCR, RAG, generation, and security stages held constant.}\label{tab:cross-vlm}\\
 \toprule
 \endhead
 \textbf{Metric} & \textbf{GPT-4o} & \textbf{Claude Sonnet 4.6} & \textbf{LLaVA-NeXT 7B}\tabularnewline
@@ -164,7 +165,6 @@ Mean rerank top-1 score & 0.693 & 0.720 & 0.659\tabularnewline
 \bottomrule
 \end{longtable}
 
-\emph{Table 5.2, Cross-VLM comparison on the 34-image evaluation set across two proprietary VLMs (GPT-4o, Claude Sonnet 4.6) and the LLaVA-NeXT-Mistral-7B open-source baseline, with OCR, RAG, generation, and security stages held constant.}
 
 \begin{figure}[htbp]
 \centering
@@ -189,6 +189,7 @@ The cross-VLM results, reported in Table 5.3, identify three findings of methodo
 The third finding is that F28 (Process) behaves substantially better than F04 and confirms the proprietary-to-open-source hierarchy established in Section 5.7.2 in a setting independent of the base term. Under GPT-4o, F28 is emitted in 65.5\% of relevant cases and is accurate when emitted in 63.2\% of those cases, yielding a recall of 41.4\%; under Claude, F28 is emitted in 82.8\% of cases but accurate in only 37.5\% (recall 31.0\%); under LLaVA-NeXT, F28 is emitted in 13.8\% of cases and accurate in 0.0\% of those (recall 0.0\%). The per-image facet hit rate aggregates these per-facet observations and follows the same pattern (GPT-4o 38.2\%, Claude 35.3\%, LLaVA-NeXT 8.8\%), recapitulating the order-of-magnitude collapse from proprietary to open-source 7B VLMs observed for the base term but at a different absolute scale: the proprietary VLMs converge near 35\% facet hit rate against a substantially lower exact-match accuracy on base term, indicating that the systems extract more useful descriptive information from the image than the base-term evaluation alone reveals. The implication for the system's operational deployment is that the facet dimension of the FoodEx2 classification carries useful signal under proprietary VLM configurations, even when the base term itself is incorrect, but does not extend gracefully to the open-source 7B class evaluated here.
 
 \begin{longtable}[]{@{}llll@{}}
+\caption{Facet-level cross-VLM evaluation on the 34-image evaluation set. Coverage is the rate at which the system emits any value for a facet that the ground truth marks as relevant. Accuracy-when-emitted is the rate at which the emitted value falls within the acceptable code list for that facet. Recall is the product of coverage and accuracy-when-emitted. Per-image facet hit rate is the fraction of the 34 images for which at least one acceptable facet code was emitted across the relevant facet set. All values are deterministically reproducible from compute\_facet\_metrics.py.}\label{tab:facet-eval}\\
 \toprule
 \endhead
 \textbf{Metric} & \textbf{GPT-4o} & \textbf{Claude Sonnet 4.6} & \textbf{LLaVA-NeXT 7B}\tabularnewline
@@ -204,7 +205,6 @@ F19 (Packaging-material), coverage & 0.0\% & 0.0\% & 0.0\%\tabularnewline
 \bottomrule
 \end{longtable}
 
-\emph{Table 5.3, Facet-level cross-VLM evaluation on the 34-image evaluation set. Coverage is the rate at which the system emits any value for a facet that the ground truth marks as relevant. Accuracy-when-emitted is the rate at which the emitted value falls within the acceptable code list for that facet. Recall is the product of coverage and accuracy-when-emitted. Per-image facet hit rate is the fraction of the 34 images for which at least one acceptable facet code was emitted across the relevant facet set. All values are deterministically reproducible from compute\_facet\_metrics.py.}
 
 \hypertarget{case-studies}{%
 \section{Case Studies}\label{case-studies}}
