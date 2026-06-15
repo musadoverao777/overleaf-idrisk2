@@ -1,3 +1,226 @@
 \chapter{Supporting Material} \label{ap:support}
 
-\textcolor{red}{\textbf{TODO:}} Add supporting material as appendices if needed: full prompt templates, extended results tables, a description of the 34-image evaluation set, and sample system outputs.
+This appendix collects supporting material referenced throughout the dissertation:
+the composition of the evaluation set (Section~\ref{ap:dataset}), the full prompt
+templates used by the vision-language and generation stages
+(Section~\ref{ap:prompts}), and a representative end-to-end system output
+(Section~\ref{ap:sample}). The extended quantitative results are reported in the
+body of the dissertation (Tables in Chapter~5), and the complete per-image
+artefacts, ground-truth annotations and evaluation scripts are available in the
+project code repository.
+
+\section{The 34-image evaluation set}\label{ap:dataset}
+
+The system was evaluated on a set of 34 images comprising Portuguese and Brazilian
+prepared dishes and packaged products. Each image was manually annotated with a
+ground-truth FoodEx2 base term. Table~\ref{tab:eval-set} lists the image, the
+ground-truth base-term code, and its FoodEx2 label.
+
+\begin{longtable}[]{@{}lll@{}}
+\caption{The 34-image evaluation set with ground-truth FoodEx2 base terms.}\label{tab:eval-set}\\
+\toprule
+\textbf{Image} & \textbf{FoodEx2 code} & \textbf{Base-term label}\tabularnewline
+\midrule
+\endhead
+acaraje.jpg & A03VM & Legumes based dishes\tabularnewline
+bifana\_batata\_frita.jpg & A03ZB & Sandwich with processed meat topping/filling\tabularnewline
+bolonhesa.jpg & A040Q & Pasta, cooked, with mixed sauce\tabularnewline
+brigadeiro.jpg & A034R & Chocolate coated confectionery\tabularnewline
+brownie.jpg & A00BF & Chocolate-based cakes\tabularnewline
+carne\_com\_arroz.jpg & A041H & Rice and meat meal\tabularnewline
+carne\_com\_macarrao.jpg & A06GT & Pasta-based dishes (cooked) (as part-nature)\tabularnewline
+chorico.jpg & A025C & Chorizo and similar\tabularnewline
+croissaint.jpg & A00BM & Croissant\tabularnewline
+feijoada.jpg & A03VT & Beans, meat, and vegetables meal\tabularnewline
+francesinha.jpg & A03ZB & Sandwich with processed meat topping/filling\tabularnewline
+francesinha2.jpg & A03ZB & Sandwich with processed meat topping/filling\tabularnewline
+francesinha3.jpg & A03ZB & Sandwich with processed meat topping/filling\tabularnewline
+frango\_com\_legumes.jpg & A03VV & Meat based dishes\tabularnewline
+guarana.jpg & A03FH & Soft drink, mixed flavours\tabularnewline
+hamburguer.jpg & A03ZL & Hamburger with bread\tabularnewline
+mandioca.jpg & A00ZZ & Cassava roots\tabularnewline
+ovo\_queijo\_cuscuz.jpg & A008C & Couscous\tabularnewline
+pastel.jpg & A03YY & Sandwiches, pizza and other stuffed bread-like cereal products\tabularnewline
+pastel\_de\_nata.jpg & A00BX & Flan tart\tabularnewline
+pudim.jpg & A02PX & Custard\tabularnewline
+rabanada.jpg & A004Y & Wheat bread and rolls, white (refined flour)\tabularnewline
+salgadinho.jpg & A0BYS & Potato crisps from potato slices\tabularnewline
+salmao\_com\_arroz.jpg & A03XR & Fish and rice meal\tabularnewline
+sanduiche.jpg & A03YZ & Sandwich and sandwich-like dishes\tabularnewline
+sopa.jpg & A041N & Tomato soup\tabularnewline
+strogonofe.jpg & A03VV & Meat based dishes\tabularnewline
+sumol.jpg & A03EV & Fruit soft drink, mixed fruit\tabularnewline
+sushi.jpg & A16GF & Rice, fish/seafood and vegetable based dishes\tabularnewline
+tosta\_com\_avocado.jpg & A03ZE & Sandwich with cheese and vegetable topping/filling\tabularnewline
+tosta\_com\_humus.jpg & A03ZD & Sandwich with vegetable topping/filling\tabularnewline
+tosta\_mista.jpg & A03ZB & Sandwich with processed meat topping/filling\tabularnewline
+ucal.jpg & A02MP & Flavoured milks\tabularnewline
+vinagrete.jpg & A045M & Salsa\tabularnewline
+\bottomrule
+\end{longtable}
+
+\section{Prompt templates}\label{ap:prompts}
+
+\subsection{Vision-Language Model: system prompt}
+
+\begin{footnotesize}
+\begin{verbatim}
+You are an expert food classification assistant specialised
+in the EFSA FoodEx2 taxonomy. Your task is to analyse food images and assign
+the correct FoodEx2 classification. The image may be a product label or a
+photo of a prepared dish - classify based on whatever evidence is available.
+
+Your response MUST be ONLY a valid JSON object with this exact structure:
+{
+    "base_term_code": "A0CKL",
+    "base_term_label": "Prepared dish name",
+    "facets": {
+        "F28": "A07XG",
+        "F04": "A037V"
+    },
+    "reasoning": "Step-by-step explanation of classification decision",
+    "confidence": "high"
+}
+
+Classification rules:
+- Always assign the most specific applicable FoodEx2 base term code
+- Include ALL relevant facets: processing method (F28), physical state (F04),
+  packaging (F30), heat treatment (F27), animal species (F01), etc.
+- For prepared dishes/meals without a label, classify based on visual content
+- Use "UNKNOWN" as base_term_code ONLY if the food cannot be identified at all
+- Do NOT use "XXXXX" - that is a schema placeholder, never a valid output
+- Confidence: "high" = clear evidence, "medium" = some ambiguity, "low" = uncertain
+- Return ONLY the JSON object - no prose, no markdown fences, no explanation outside
+JSON
+\end{verbatim}
+\end{footnotesize}
+
+\subsection{Vision-Language Model: few-shot examples}
+
+\begin{footnotesize}
+\begin{verbatim}
+Example 1 - product label:
+OCR text: "Whole wheat flour, stone-ground, 1kg, packaged"
+Output:
+{
+    "base_term_code": "A00JL",
+    "base_term_label": "Wheat flour",
+    "facets": {"F28": "A07XG", "F04": "A037V", "F30": "A037W"},
+    "reasoning": "Label identifies stone-ground wheat flour (A00JL). F28
+    stone-ground processing, F04 packaged solid state, F30 packaged consumer
+    format.",
+    "confidence": "high"
+}
+
+Example 2 - photo of prepared dish (no label):
+OCR text: ""
+Output:
+{
+    "base_term_code": "A0FQJ",
+    "base_term_label": "Mixed dish with meat and vegetables",
+    "facets": {"F28": "A07YG", "F04": "A037T"},
+    "reasoning": "Visual analysis shows a cooked dish with meat pieces and
+    vegetables. No label text available. Classified visually as mixed meat-vegetable
+    dish.",
+    "confidence": "medium"
+}
+\end{verbatim}
+\end{footnotesize}
+
+\subsection{Retrieval-augmented generation: system prompt}
+
+\begin{footnotesize}
+\begin{verbatim}
+You are an expert food classification assistant
+specialised in the EFSA FoodEx2 taxonomy. Your task is to assign the correct
+FoodEx2 classification to a food product based on:
+1. A description of the product (from visual analysis and OCR)
+2. Relevant passages retrieved from the official EFSA FoodEx2 documentation
+
+IMPORTANT RULES:
+- Prefer information from the retrieved documentation; supplement with general
+  FoodEx2 knowledge when documentation is insufficient
+- Always assign the most specific applicable base term
+- Include ALL relevant facets from the FoodEx2 facet categories:
+  F01 (animal species), F04 (physical state), F27 (heat treatment),
+  F28 (processing method), F29 (packaging), F30 (consumer format), etc.
+- Do NOT use "XXXXX" as base_term_code - it is a schema placeholder only
+- Use "UNKNOWN" only if the food cannot be identified at all
+- Cite which retrieved passage supports each decision in the reasoning
+- Return ONLY a valid JSON object - no prose outside the JSON
+
+Output schema (example values shown - replace with real codes):
+{
+    "base_term_code": "A0CKL",
+    "base_term_label": "Prepared dish name",
+    "facets": {
+        "F28": "A07XG",
+        "F04": "A037V"
+    },
+    "reasoning": "Step-by-step explanation citing specific retrieved passages",
+    "confidence": "high"
+}
+\end{verbatim}
+\end{footnotesize}
+
+\subsection{Retrieval-augmented generation: prompt assembly}
+
+The final generation prompt combines the retrieved EFSA FoodEx2 passages with the
+multimodal product description produced by the vision-language stage, following
+the template below.
+
+\begin{footnotesize}
+\begin{verbatim}
+RETRIEVED EFSA FOODEX2 DOCUMENTATION:
+{passage_block}
+---
+FOOD PRODUCT INFORMATION:
+{product_description}
+---
+Based exclusively on the retrieved documentation above, provide the FoodEx2
+classification for this food product. Reference specific passages in your reasoning.
+Return a valid JSON object matching the required schema.
+\end{verbatim}
+\end{footnotesize}
+
+\section{Sample system output}\label{ap:sample}
+
+The following is a representative end-to-end output record produced by the pipeline
+(GPT-4o configuration) for one evaluation image. It shows the final FoodEx2
+classification, the model's reasoning, the grounding check, and the preliminary
+code proposed by the vision-language stage before retrieval-augmented correction.
+
+\begin{footnotesize}
+\begin{verbatim}
+{
+  "image": "acaraje.jpg",
+  "wall_time_s": 22.49,
+  "classification": {
+    "base_term_code": "A03YC",
+    "base_term_label": "Mixed vegetables, fried",
+    "facets": {
+      "F04": "A07XJ",
+      "F28": "A07GR"
+    },
+    "confidence": "high",
+    "requires_human_review": false
+  },
+  "reasoning": "The product is described as 'Stuffed fried plantain' with a mixture
+  that includes shrimp and vegetables. The retrieved documentation for term A03YC
+  'Mixed vegetables, fried' matches the description of the product being fried and
+  containing vegetables. The implicit facets for A03YC include F04.A07XJ (solid,
+  pieces) and F28.A07GR (frying), which align with the product's characteristics.
+  Although the product includes shrimp, the primary classification is based on the
+  vegetable content and frying process, as per the retrieved documentation.",
+  "grounding": {
+    "ok": true,
+    "bad_phrase": ""
+  },
+  "vlm": {
+    "model": "gpt4o",
+    "preliminary_code": "A0EKC",
+    "preliminary_confidence": "high"
+  }
+}
+\end{verbatim}
+\end{footnotesize}
